@@ -21,28 +21,28 @@ export function HeroSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2, duration: 0.7 }}
-          className="mb-4 text-xs uppercase tracking-[0.4em] text-gold-300"
+          className="mb-4 text-xs uppercase tracking-[0.4em] text-gold-300 preserve-gold"
         >
-          Karachi, Pakistan
+          Lahore, Pakistan
         </motion.p>
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.35, duration: 0.8 }}
-          className="font-serif text-5xl leading-tight text-white sm:text-6xl md:text-7xl"
+          className="font-serif text-5xl leading-tight text-foreground sm:text-6xl md:text-7xl"
         >
-          Welcome to Wedding
+          Welcome to 
           <br />
-          <span className="text-gold-300">By Ayaan Qadeer</span>
+          <span className="text-gold-300 preserve-gold"> Almir Wedding Films</span>
         </motion.h1>
         <motion.p
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.55, duration: 0.7 }}
-          className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/75 sm:text-lg"
+          className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg"
         >
-          Where dreams come to life and love stories beautifully unfold.
-          Premium wedding photography & videography since 2008.
+          Where dreams come to life and love stories unfold beautifully.
+          Premium wedding photography & cinematography crafted with passion.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -58,7 +58,7 @@ export function HeroSection() {
           </Link>
           <Link
             href="/booking"
-            className="rounded-full border border-white/30 px-8 py-3 text-sm uppercase tracking-[0.2em] text-white transition hover:border-gold-400 hover:text-gold-300"
+            className="rounded-full border border-border-theme px-8 py-3 text-sm uppercase tracking-[0.2em] text-foreground transition hover:border-gold-400 hover:text-gold-300"
           >
             Book Your Date
           </Link>

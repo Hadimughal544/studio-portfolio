@@ -16,7 +16,7 @@ const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
 async function main() {
-  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@wba.com";
+  const adminEmail = process.env.ADMIN_EMAIL ?? "admin@almirweddingfilms.com";
   const adminPassword = process.env.ADMIN_PASSWORD ?? "admin123";
 
   const hashedPassword = await bcrypt.hash(adminPassword, 12);
@@ -93,7 +93,7 @@ async function main() {
           sortOrder: 1,
         },
         {
-          question: "Do you travel outside Karachi?",
+          question: "Do you travel outside Lahore?",
           answer:
             "Yes! We cover weddings across Pakistan and internationally. Travel fees may apply depending on location.",
           sortOrder: 2,

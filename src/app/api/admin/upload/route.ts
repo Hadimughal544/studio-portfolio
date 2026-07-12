@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { buildMediaKey, getUploadPresignedUrl } from "@/lib/s3";
+import { getSignedUploadParams } from "@/lib/cloudinary";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -10,23 +10,19 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { filename, contentType, folder = "portfolio" } = await request.json();
+    const { filename, folder = "portfolio" } = await request.json();
 
-    if (!filename || !contentType) {
-      return NextResponse.json(
-        { error: "filename and contentType are required" },
-        { status: 400 },
-      );
+    if (!filename) {
+      return NextResponse.json({ error: "filename is required" }, { status: 400 });
     }
 
-    const key = buildMediaKey(folder, filename);
-    const result = await getUploadPresignedUrl(key, contentType);
+    const result = getSignedUploadParams(folder, filename);
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Upload presign error:", error);
+    console.error("Upload sign error:", error);
     return NextResponse.json(
-      { error: "Failed to generate upload URL" },
+      { error: "Failed to generate upload signature" },
       { status: 500 },
     );
   }

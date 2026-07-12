@@ -46,27 +46,27 @@ export default function AdminBookingsPage() {
   }
 
   return (
-    <div className="p-8">
-      <h1 className="font-serif text-3xl text-white">Booking Inquiries</h1>
-      <p className="mt-1 text-sm text-white/50">
+    <div className="p-4 sm:p-6 lg:p-8">
+      <h1 className="font-serif text-3xl text-foreground">Booking Inquiries</h1>
+      <p className="mt-1 text-sm text-muted-subtle">
         Manage all wedding booking form submissions.
       </p>
 
       {bookings.length === 0 ? (
-        <p className="mt-10 text-white/50">No booking inquiries yet.</p>
+        <p className="mt-10 text-muted-subtle">No booking inquiries yet.</p>
       ) : (
         <div className="mt-8 space-y-4">
           {bookings.map((booking) => (
             <article
               key={booking.id}
-              className="rounded-sm border border-white/10 bg-white/[0.03] p-6"
+              className="rounded-sm border border-border-theme bg-surface-muted p-6"
             >
               <div className="flex flex-wrap items-start justify-between gap-4">
                 <div>
-                  <h2 className="text-lg font-medium text-white">
+                  <h2 className="text-lg font-medium text-foreground">
                     {booking.fullName}
                   </h2>
-                  <p className="mt-1 text-sm text-white/50">
+                  <p className="mt-1 text-sm text-muted-subtle">
                     {booking.email} · {booking.phone}
                   </p>
                 </div>
@@ -74,7 +74,7 @@ export default function AdminBookingsPage() {
                   <select
                     value={booking.status}
                     onChange={(e) => updateStatus(booking.id, e.target.value)}
-                    className="rounded-sm border border-white/15 bg-black/40 px-3 py-1.5 text-xs uppercase text-white"
+                    className="form-input px-3 py-1.5 text-xs uppercase"
                   >
                     {STATUSES.map((s) => (
                       <option key={s} value={s}>
@@ -94,26 +94,26 @@ export default function AdminBookingsPage() {
 
               <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                 <div>
-                  <p className="text-white/40">Event Type</p>
-                  <p className="text-white">{booking.eventType}</p>
+                  <p className="text-muted-subtle">Event Type</p>
+                  <p className="text-foreground">{booking.eventType}</p>
                 </div>
                 <div>
-                  <p className="text-white/40">Event Date</p>
-                  <p className="text-white">{formatDate(booking.eventDate)}</p>
+                  <p className="text-muted-subtle">Event Date</p>
+                  <p className="text-foreground">{formatDate(booking.eventDate)}</p>
                 </div>
                 <div>
-                  <p className="text-white/40">Venue</p>
-                  <p className="text-white">{booking.venue ?? "—"}</p>
+                  <p className="text-muted-subtle">Venue</p>
+                  <p className="text-foreground">{booking.venue ?? "—"}</p>
                 </div>
               </div>
 
               {booking.message && (
-                <p className="mt-4 rounded-sm bg-black/30 p-4 text-sm text-white/70">
+                <p className="mt-4 rounded-sm bg-black/30 p-4 text-sm text-muted">
                   {booking.message}
                 </p>
               )}
 
-              <p className="mt-3 text-xs text-white/30">
+              <p className="mt-3 text-xs text-foreground/30">
                 Submitted {formatDate(booking.createdAt)}
               </p>
             </article>

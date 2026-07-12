@@ -48,18 +48,18 @@ export function BookingForm() {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
-          className="mx-auto max-w-lg rounded-sm border border-gold-400/30 bg-gold-400/5 p-10 text-center"
+          className="mx-auto max-w-lg rounded-sm border border-gold-400/40 bg-surface-muted p-10 text-center"
         >
           <CheckCircle className="mx-auto text-gold-400" size={48} />
-          <h2 className="mt-6 font-serif text-3xl text-white">Thank You!</h2>
-          <p className="mt-3 text-white/65">
+          <h2 className="mt-6 font-serif text-3xl text-foreground">Thank You!</h2>
+          <p className="mt-3 text-muted">
             Your booking inquiry has been received. We&apos;ll contact you soon
             to confirm the details.
           </p>
           <button
             type="button"
             onClick={() => setSubmitted(false)}
-            className="mt-8 text-sm uppercase tracking-[0.2em] text-gold-400 hover:text-gold-300"
+            className="mt-8 text-sm uppercase tracking-[0.2em] text-gold-500 hover:text-gold-400 dark:text-gold-400 dark:hover:text-gold-300"
           >
             Submit Another Inquiry
           </button>
@@ -72,7 +72,7 @@ export function BookingForm() {
     <section className="py-16">
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="mx-auto max-w-2xl space-y-6 px-4 sm:px-6"
+        className="mx-auto max-w-2xl space-y-6 rounded-sm border border-border-theme bg-surface-muted p-6 sm:space-y-6 sm:p-8"
       >
         <div className="grid gap-6 sm:grid-cols-2">
           <Field label="Full Name" error={errors.fullName?.message}>
@@ -106,8 +106,10 @@ export function BookingForm() {
         </div>
 
         <Field label="Event Type" error={errors.eventType?.message}>
-          <select {...register("eventType")} className="form-input">
-            <option value="">Select event type</option>
+          <select {...register("eventType")} className="form-input" defaultValue="">
+            <option value="" disabled>
+              Select event type
+            </option>
             {EVENT_TYPES.map((type) => (
               <option key={type} value={type}>
                 {type}
@@ -134,9 +136,7 @@ export function BookingForm() {
         </Field>
 
         {error && (
-          <p className="rounded-sm border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-300">
-            {error}
-          </p>
+          <p className="form-error rounded-sm px-4 py-3 text-sm">{error}</p>
         )}
 
         <button
@@ -154,26 +154,6 @@ export function BookingForm() {
           )}
         </button>
       </form>
-
-      <style jsx global>{`
-        .form-input {
-          width: 100%;
-          border-radius: 2px;
-          border: 1px solid rgba(255, 255, 255, 0.12);
-          background: rgba(255, 255, 255, 0.04);
-          padding: 0.875rem 1rem;
-          font-size: 0.875rem;
-          color: white;
-          outline: none;
-          transition: border-color 0.2s;
-        }
-        .form-input:focus {
-          border-color: rgba(212, 175, 55, 0.6);
-        }
-        .form-input::placeholder {
-          color: rgba(255, 255, 255, 0.35);
-        }
-      `}</style>
     </section>
   );
 }
@@ -189,11 +169,9 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/60">
-        {label}
-      </label>
+      <label className="form-label">{label}</label>
       {children}
-      {error && <p className="mt-1.5 text-xs text-red-400">{error}</p>}
+      {error && <p className="mt-1.5 text-xs text-red-400 light:text-red-600">{error}</p>}
     </div>
   );
 }

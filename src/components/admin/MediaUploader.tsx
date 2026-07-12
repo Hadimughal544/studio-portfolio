@@ -27,29 +27,38 @@ export function MediaUploader({
     setError(null);
 
     try {
-      const presignRes = await fetch("/api/admin/upload", {
+      const signRes = await fetch("/api/admin/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           filename: file.name,
-          contentType: file.type,
           folder,
         }),
       });
 
-      if (!presignRes.ok) throw new Error("Failed to get upload URL");
+      if (!signRes.ok) throw new Error("Failed to get upload signature");
 
-      const { uploadUrl, publicUrl } = await presignRes.json();
+      const { cloudName, apiKey, timestamp, signature, publicId } =
+        await signRes.json();
 
-      const uploadRes = await fetch(uploadUrl, {
-        method: "PUT",
-        body: file,
-        headers: { "Content-Type": file.type },
-      });
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("api_key", apiKey);
+      formData.append("timestamp", String(timestamp));
+      formData.append("signature", signature);
+      formData.append("public_id", publicId);
 
-      if (!uploadRes.ok) throw new Error("Failed to upload file");
+      const uploadRes = await fetch(
+        `https://api.cloudinary.com/v1_1/${cloudName}/auto/upload`,
+        { method: "POST", body: formData },
+      );
 
-      onUploaded(publicUrl);
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok) {
+        throw new Error(uploadData.error?.message ?? "Failed to upload file");
+      }
+
+      onUploaded(uploadData.secure_url);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Upload failed");
     } finally {
@@ -60,7 +69,7 @@ export function MediaUploader({
 
   return (
     <div>
-      <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-white/20 px-4 py-3 text-sm text-white/70 transition hover:border-gold-400/50 hover:text-white">
+      <label className="inline-flex cursor-pointer items-center gap-2 rounded-sm border border-dashed border-border-theme px-4 py-3 text-sm text-muted transition hover:border-gold-400/50 hover:text-foreground">
         {uploading ? (
           <Loader2 className="animate-spin" size={16} />
         ) : (

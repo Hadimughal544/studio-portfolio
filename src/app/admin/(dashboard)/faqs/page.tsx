@@ -69,11 +69,11 @@ export default function AdminFaqsPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-white">FAQs</h1>
-          <p className="mt-1 text-sm text-white/50">Manage frequently asked questions.</p>
+          <h1 className="font-serif text-3xl text-foreground">FAQs</h1>
+          <p className="mt-1 text-sm text-muted-subtle">Manage frequently asked questions.</p>
         </div>
         <button
           type="button"
@@ -92,14 +92,14 @@ export default function AdminFaqsPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="mt-8 rounded-sm border border-white/10 bg-white/[0.03] p-6"
+          className="mt-8 rounded-sm border border-border-theme bg-surface-muted p-6"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-xl text-white">
+            <h2 className="font-serif text-xl text-foreground">
               {editingId ? "Edit FAQ" : "New FAQ"}
             </h2>
             <button type="button" onClick={() => setShowForm(false)}>
-              <X className="text-white/50" size={20} />
+              <X className="text-muted-subtle" size={20} />
             </button>
           </div>
           <input
@@ -107,7 +107,7 @@ export default function AdminFaqsPage() {
             onChange={(e) => setForm({ ...form, question: e.target.value })}
             placeholder="Question"
             required
-            className="mb-4 w-full rounded-sm border border-white/15 bg-black/40 px-4 py-3 text-sm text-white"
+            className="mb-4 form-input"
           />
           <textarea
             value={form.answer}
@@ -115,7 +115,7 @@ export default function AdminFaqsPage() {
             placeholder="Answer"
             rows={4}
             required
-            className="mb-4 w-full rounded-sm border border-white/15 bg-black/40 px-4 py-3 text-sm text-white"
+            className="mb-4 form-input"
           />
           <button
             type="submit"
@@ -131,11 +131,11 @@ export default function AdminFaqsPage() {
         {faqs.map((faq) => (
           <article
             key={faq.id}
-            className="flex items-start justify-between gap-4 rounded-sm border border-white/10 bg-white/[0.03] p-5"
+            className="flex items-start justify-between gap-4 rounded-sm border border-border-theme bg-surface-muted p-5"
           >
             <div>
-              <h2 className="font-medium text-white">{faq.question}</h2>
-              <p className="mt-2 text-sm text-white/60">{faq.answer}</p>
+              <h2 className="font-medium text-foreground">{faq.question}</h2>
+              <p className="mt-2 text-sm text-muted">{faq.answer}</p>
             </div>
             <div className="flex shrink-0 gap-1">
               <button
@@ -149,7 +149,7 @@ export default function AdminFaqsPage() {
                   });
                   setShowForm(true);
                 }}
-                className="p-2 text-white/50 hover:text-white"
+                className="p-2 text-muted-subtle hover:text-foreground"
               >
                 <Pencil size={16} />
               </button>

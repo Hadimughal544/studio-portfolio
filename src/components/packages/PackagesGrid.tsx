@@ -14,7 +14,7 @@ export function PackagesGrid({ packages }: Props) {
   if (packages.length === 0) {
     return (
       <section className="py-24">
-        <div className="mx-auto max-w-xl px-4 text-center text-white/60">
+        <div className="mx-auto max-w-xl px-4 text-center text-muted">
           <p>Packages will be available soon. Please check back or contact us directly.</p>
           <Link
             href="/booking"
@@ -40,7 +40,7 @@ export function PackagesGrid({ packages }: Props) {
             className={`relative flex flex-col rounded-sm border p-8 ${
               pkg.isPopular
                 ? "border-gold-400/60 bg-gradient-to-b from-gold-400/10 to-transparent"
-                : "border-white/10 bg-white/[0.03]"
+                : "border-border-theme bg-surface-muted"
             }`}
           >
             {pkg.isPopular && (
@@ -48,8 +48,8 @@ export function PackagesGrid({ packages }: Props) {
                 Most Popular
               </span>
             )}
-            <h2 className="font-serif text-3xl text-white">{pkg.name}</h2>
-            <p className="mt-3 text-sm leading-relaxed text-white/60">
+            <h2 className="font-serif text-3xl text-foreground">{pkg.name}</h2>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
               {pkg.description}
             </p>
             <p className="mt-8 font-serif text-4xl text-gold-300">
@@ -57,7 +57,7 @@ export function PackagesGrid({ packages }: Props) {
             </p>
             <ul className="mt-8 flex-1 space-y-3">
               {pkg.features.map((feature) => (
-                <li key={feature} className="flex items-start gap-3 text-sm text-white/75">
+                <li key={feature} className="flex items-start gap-3 text-sm text-muted">
                   <Check className="mt-0.5 shrink-0 text-gold-400" size={16} />
                   {feature}
                 </li>
@@ -68,7 +68,7 @@ export function PackagesGrid({ packages }: Props) {
               className={`mt-10 block rounded-full py-3 text-center text-sm uppercase tracking-[0.2em] transition ${
                 pkg.isPopular
                   ? "bg-gold-500 text-black hover:bg-gold-400"
-                  : "border border-white/20 text-white hover:border-gold-400 hover:text-gold-300"
+                  : "border border-border-theme text-foreground hover:border-gold-400 hover:text-gold-300"
               }`}
             >
               Book This Package

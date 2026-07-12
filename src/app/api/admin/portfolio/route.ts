@@ -3,7 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { portfolioSchema } from "@/lib/validations";
-import { deleteFromS3, extractS3Key } from "@/lib/s3";
+import { deleteFromCloudinary } from "@/lib/cloudinary";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -80,12 +80,10 @@ export async function DELETE(request: Request) {
 
   const item = await prisma.portfolioItem.findUnique({ where: { id } });
   if (item) {
-    const mediaKey = extractS3Key(item.mediaUrl);
-    const thumbKey = item.thumbnailUrl
-      ? extractS3Key(item.thumbnailUrl)
-      : null;
-    if (mediaKey) await deleteFromS3(mediaKey).catch(() => {});
-    if (thumbKey) await deleteFromS3(thumbKey).catch(() => {});
+    await deleteFromCloudinary(item.mediaUrl).catch(() => {});
+    if (item.thumbnailUrl) {
+      await deleteFromCloudinary(item.thumbnailUrl).catch(() => {});
+    }
   }
 
   await prisma.portfolioItem.delete({ where: { id } });

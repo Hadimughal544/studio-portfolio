@@ -103,11 +103,11 @@ export default function AdminPackagesPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-white">Packages</h1>
-          <p className="mt-1 text-sm text-white/50">
+          <h1 className="font-serif text-3xl text-foreground">Packages</h1>
+          <p className="mt-1 text-sm text-muted-subtle">
             Add, edit, or remove wedding packages.
           </p>
         </div>
@@ -124,14 +124,14 @@ export default function AdminPackagesPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="mt-8 rounded-sm border border-white/10 bg-white/[0.03] p-6"
+          className="mt-8 rounded-sm border border-border-theme bg-surface-muted p-6"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-xl text-white">
+            <h2 className="font-serif text-xl text-foreground">
               {editingId ? "Edit Package" : "New Package"}
             </h2>
             <button type="button" onClick={() => setShowForm(false)}>
-              <X className="text-white/50" size={20} />
+              <X className="text-muted-subtle" size={20} />
             </button>
           </div>
 
@@ -162,7 +162,7 @@ export default function AdminPackagesPage() {
           </div>
 
           <div className="mt-4">
-            <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/50">
+            <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-muted-subtle">
               Features (one per line)
             </label>
             <textarea
@@ -170,12 +170,12 @@ export default function AdminPackagesPage() {
               onChange={(e) => setForm({ ...form, features: e.target.value })}
               rows={5}
               required
-              className="w-full rounded-sm border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none"
+              className="form-input"
             />
           </div>
 
           <div className="mt-4 flex flex-wrap gap-6">
-            <label className="flex items-center gap-2 text-sm text-white/70">
+            <label className="flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={form.isPopular}
@@ -207,18 +207,18 @@ export default function AdminPackagesPage() {
         {packages.map((pkg) => (
           <article
             key={pkg.id}
-            className="rounded-sm border border-white/10 bg-white/[0.03] p-6"
+            className="rounded-sm border border-border-theme bg-surface-muted p-6"
           >
             <div className="flex items-start justify-between">
               <div>
-                <h2 className="font-serif text-xl text-white">{pkg.name}</h2>
+                <h2 className="font-serif text-xl text-foreground">{pkg.name}</h2>
                 <p className="mt-1 text-gold-300">{formatPrice(pkg.price)}</p>
               </div>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => openEdit(pkg)}
-                  className="rounded-sm p-2 text-white/50 hover:bg-white/5 hover:text-white"
+                  className="rounded-sm p-2 text-muted-subtle hover:bg-surface-muted hover:text-foreground"
                 >
                   <Pencil size={16} />
                 </button>
@@ -231,8 +231,8 @@ export default function AdminPackagesPage() {
                 </button>
               </div>
             </div>
-            <p className="mt-3 text-sm text-white/60">{pkg.description}</p>
-            <ul className="mt-3 space-y-1 text-sm text-white/50">
+            <p className="mt-3 text-sm text-muted">{pkg.description}</p>
+            <ul className="mt-3 space-y-1 text-sm text-muted-subtle">
               {pkg.features.map((f) => (
                 <li key={f}>• {f}</li>
               ))}
@@ -259,14 +259,11 @@ function AdminInput({
   textarea?: boolean;
   required?: boolean;
 }) {
-  const className =
-    "w-full rounded-sm border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-gold-400/50";
+  const className = "form-input";
 
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/50">
-        {label}
-      </label>
+      <label className="form-label">{label}</label>
       {textarea ? (
         <textarea
           value={value}

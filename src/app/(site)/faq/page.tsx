@@ -4,7 +4,19 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "FAQ",
-  description: "Frequently asked questions about our wedding services.",
+  description:
+    "Frequently asked questions about Almir Wedding Films wedding photography and videography services.",
+  openGraph: {
+    title: "FAQ | Almir Wedding Films",
+    description:
+      "Answers to common questions about our wedding photography and videography services.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "FAQ | Almir Wedding Films",
+    description:
+      "Answers to common questions about our wedding photography and videography services.",
+  },
 };
 
 export default async function FAQPage() {
@@ -14,15 +26,15 @@ export default async function FAQPage() {
 
   return (
     <div>
-      <section className="border-b border-white/10 bg-gradient-to-b from-white/5 to-transparent py-20">
+      <section className="page-hero py-20">
         <div className="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
           <p className="text-xs uppercase tracking-[0.35em] text-gold-300">
             Questions
           </p>
-          <h1 className="mt-4 font-serif text-5xl text-white sm:text-6xl">
+          <h1 className="mt-4 font-serif text-5xl text-foreground sm:text-6xl">
             FAQ
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-white/65">
+          <p className="mx-auto mt-5 max-w-2xl text-muted">
             Everything you need to know about booking, packages, and our wedding
             photography process.
           </p>

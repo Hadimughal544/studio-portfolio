@@ -29,3 +29,9 @@ export function slugify(text: string) {
     .replace(/-+/g, "-")
     .trim();
 }
+
+export function isImageUrl(url: string) {
+  if (!url) return false;
+  if (/\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(url)) return true;
+  return url.includes("res.cloudinary.com") && url.includes("/image/");
+}

@@ -18,7 +18,7 @@ export function CTASection() {
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-xs uppercase tracking-[0.35em] text-gold-300"
+          className="text-xs uppercase tracking-[0.35em] text-gold-300 preserve-gold"
         >
           Let&apos;s Create Magic
         </motion.p>
@@ -27,7 +27,7 @@ export function CTASection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="mt-4 font-serif text-4xl text-white sm:text-5xl"
+          className="mt-4 font-serif text-4xl text-foreground sm:text-5xl"
         >
           Ready to Tell Your Love Story?
         </motion.h2>
@@ -36,7 +36,7 @@ export function CTASection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="mx-auto mt-5 max-w-2xl text-white/70"
+          className="mx-auto mt-5 max-w-2xl text-muted"
         >
           Book a consultation and let our team capture every precious moment of
           your special day with artistry and heart.

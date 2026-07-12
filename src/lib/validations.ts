@@ -20,8 +20,7 @@ export const packageSchema = z.object({
 });
 
 export const portfolioSchema = z.object({
-  title: z.string().min(2),
-  description: z.string().optional(),
+  title: z.string().optional().default(""),
   mediaType: z.enum(["IMAGE", "VIDEO"]),
   mediaUrl: z.string().url(),
   thumbnailUrl: z.string().url().optional().or(z.literal("")),
@@ -37,11 +36,10 @@ export const faqSchema = z.object({
 });
 
 export const clientAlbumSchema = z.object({
-  title: z.string().min(2),
+  title: z.string().optional().default(""),
   slug: z.string().min(2),
-  password: z.string().optional(),
-  coverUrl: z.string().optional(),
-  description: z.string().optional(),
+  coverUrl: z.string().url("Cover image is required"),
+  albumUrl: z.string().url("Album link must be a valid URL"),
 });
 
 export type BookingInput = z.infer<typeof bookingSchema>;

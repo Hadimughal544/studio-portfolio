@@ -38,18 +38,17 @@ export function AboutSection() {
           </h2>
           <div className="mt-6 space-y-4 text-base leading-relaxed text-black/70">
             <p>
-              WBA is a team of dedicated creatives based in Karachi, Pakistan.
-              Our founder and CEO, Ayaan Qadeer, brings a wealth of expertise to
-              every celebration with a photography and videography journey that
-              began in 2008.
+              Almir Wedding Films is a team of dedicated creatives based in
+              Lahore, Pakistan. We bring a wealth of expertise to every
+              celebration with a photography and videography journey.
             </p>
             <p>
-              At Wedding by Ayaan Qadeer, your satisfaction is our highest
-              priority. We pour our passion and creativity into crafting imagery
-              that stands out and speaks with its own unique voice.
+              At Almir Wedding Films, your satisfaction is our highest priority.
+              We pour our passion and creativity into crafting imagery that
+              stands out and speaks with its own unique voice.
             </p>
             <p>
-              Welcome to a world where weddings are not just events—they are the
+              Welcome to a world where weddings are not just events, they are the
               beginning of a lifetime of cherished memories.
             </p>
           </div>

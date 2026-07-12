@@ -5,6 +5,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2 } from "lucide-react";
 
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
+import { BrandLogo } from "@/components/layout/BrandLogo";
+
 export default function AdminLoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -35,19 +38,24 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950 px-4">
-      <div className="w-full max-w-md rounded-sm border border-white/10 bg-zinc-900 p-8">
+    <div className="flex min-h-screen items-center justify-center bg-surface-elevated px-4">
+      <div className="w-full max-w-md rounded-sm border border-border-theme bg-surface-elevated p-6 sm:p-8">
         <div className="mb-8 text-center">
-          <p className="font-serif text-2xl tracking-[0.2em] text-gold-300">WBA</p>
-          <h1 className="mt-2 text-lg text-white">Admin Login</h1>
-          <p className="mt-1 text-sm text-white/50">
-            Sign in to manage your website
+          <div className="flex justify-center">
+            <BrandLogo size="lg" />
+          </div>
+          <h1 className="mt-4 text-lg text-foreground">Admin Login</h1>
+          <p className="mt-1 text-sm text-muted-subtle">
+            Almir Wedding Films — sign in to manage your website
           </p>
+          <div className="mt-4 flex justify-center">
+            <ThemeToggle />
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
           <div>
-            <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/50">
+            <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-muted-subtle">
               Email
             </label>
             <input
@@ -55,11 +63,11 @@ export default function AdminLoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full rounded-sm border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-gold-400/50"
+              className="form-input"
             />
           </div>
           <div>
-            <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/50">
+            <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-muted-subtle">
               Password
             </label>
             <input
@@ -67,7 +75,7 @@ export default function AdminLoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full rounded-sm border border-white/15 bg-black/40 px-4 py-3 text-sm text-white outline-none focus:border-gold-400/50"
+              className="form-input"
             />
           </div>
 

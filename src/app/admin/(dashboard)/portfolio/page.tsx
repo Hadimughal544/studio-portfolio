@@ -4,11 +4,11 @@ import { useEffect, useState } from "react";
 import { Loader2, Plus, Pencil, Trash2, X } from "lucide-react";
 import type { PortfolioItem } from "@/generated/prisma/client";
 import { MediaUploader } from "@/components/admin/MediaUploader";
+import { MediaPreview } from "@/components/admin/MediaPreview";
 import { PORTFOLIO_CATEGORIES } from "@/lib/constants";
 
 type FormData = {
   title: string;
-  description: string;
   mediaType: "IMAGE" | "VIDEO";
   mediaUrl: string;
   thumbnailUrl: string;
@@ -19,7 +19,6 @@ type FormData = {
 
 const emptyForm: FormData = {
   title: "",
-  description: "",
   mediaType: "IMAGE",
   mediaUrl: "",
   thumbnailUrl: "",
@@ -56,7 +55,6 @@ export default function AdminPortfolioPage() {
     setEditingId(item.id);
     setForm({
       title: item.title,
-      description: item.description ?? "",
       mediaType: item.mediaType,
       mediaUrl: item.mediaUrl,
       thumbnailUrl: item.thumbnailUrl ?? "",
@@ -110,12 +108,12 @@ export default function AdminPortfolioPage() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-serif text-3xl text-white">Portfolio</h1>
-          <p className="mt-1 text-sm text-white/50">
-            Upload images and videos to S3 and manage your gallery.
+          <h1 className="font-serif text-3xl text-foreground">Portfolio</h1>
+          <p className="mt-1 text-sm text-muted-subtle">
+            Upload images and videos to Cloudinary and manage your gallery.
           </p>
         </div>
         <button
@@ -131,23 +129,22 @@ export default function AdminPortfolioPage() {
       {showForm && (
         <form
           onSubmit={handleSubmit}
-          className="mt-8 rounded-sm border border-white/10 bg-white/[0.03] p-6"
+          className="mt-8 rounded-sm border border-border-theme bg-surface-muted p-6"
         >
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-serif text-xl text-white">
+            <h2 className="font-serif text-xl text-foreground">
               {editingId ? "Edit Portfolio Item" : "New Portfolio Item"}
             </h2>
             <button type="button" onClick={() => setShowForm(false)}>
-              <X className="text-white/50" size={20} />
+              <X className="text-muted-subtle" size={20} />
             </button>
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Title">
+            <Field label="Title (optional)">
               <input
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
-                required
                 className="admin-input"
               />
             </Field>
@@ -194,19 +191,6 @@ export default function AdminPortfolioPage() {
             </Field>
           </div>
 
-          <div className="mt-4">
-            <Field label="Description">
-              <textarea
-                value={form.description}
-                onChange={(e) =>
-                  setForm({ ...form, description: e.target.value })
-                }
-                rows={3}
-                className="admin-input"
-              />
-            </Field>
-          </div>
-
           <div className="mt-4 space-y-4">
             <Field label="Media File">
               <MediaUploader
@@ -215,11 +199,12 @@ export default function AdminPortfolioPage() {
                 label={`Upload ${form.mediaType === "VIDEO" ? "Video" : "Image"}`}
                 onUploaded={(url) => setForm({ ...form, mediaUrl: url })}
               />
-              {form.mediaUrl && (
-                <p className="mt-2 truncate text-xs text-green-400">
-                  ✓ {form.mediaUrl}
-                </p>
-              )}
+              <MediaPreview
+                url={form.mediaUrl}
+                type={form.mediaType === "VIDEO" ? "video" : "image"}
+                alt={form.title || "Portfolio media"}
+                onRemove={() => setForm({ ...form, mediaUrl: "" })}
+              />
             </Field>
 
             {form.mediaType === "VIDEO" && (
@@ -232,10 +217,16 @@ export default function AdminPortfolioPage() {
                     setForm({ ...form, thumbnailUrl: url })
                   }
                 />
+                <MediaPreview
+                  url={form.thumbnailUrl}
+                  type="image"
+                  alt={`${form.title || "Portfolio"} thumbnail`}
+                  onRemove={() => setForm({ ...form, thumbnailUrl: "" })}
+                />
               </Field>
             )}
 
-            <label className="flex items-center gap-2 text-sm text-white/70">
+            <label className="flex items-center gap-2 text-sm text-muted">
               <input
                 type="checkbox"
                 checked={form.featured}
@@ -263,9 +254,9 @@ export default function AdminPortfolioPage() {
         {items.map((item) => (
           <article
             key={item.id}
-            className="overflow-hidden rounded-sm border border-white/10 bg-white/[0.03]"
+            className="overflow-hidden rounded-sm border border-border-theme bg-surface-muted"
           >
-            <div className="aspect-video bg-black/40">
+            <div className="aspect-video bg-input-bg">
               {item.mediaType === "VIDEO" ? (
                 <video
                   src={item.mediaUrl}
@@ -284,8 +275,8 @@ export default function AdminPortfolioPage() {
             <div className="p-4">
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="font-medium text-white">{item.title}</h2>
-                  <p className="text-xs uppercase text-white/40">
+                  <h2 className="font-medium text-foreground">{item.title}</h2>
+                  <p className="text-xs uppercase text-muted-subtle">
                     {item.category}
                     {item.featured && " · Featured"}
                   </p>
@@ -294,7 +285,7 @@ export default function AdminPortfolioPage() {
                   <button
                     type="button"
                     onClick={() => openEdit(item)}
-                    className="p-2 text-white/50 hover:text-white"
+                    className="p-2 text-muted-subtle hover:text-foreground"
                   >
                     <Pencil size={14} />
                   </button>
@@ -311,19 +302,6 @@ export default function AdminPortfolioPage() {
           </article>
         ))}
       </div>
-
-      <style jsx global>{`
-        .admin-input {
-          width: 100%;
-          border-radius: 2px;
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          background: rgba(0, 0, 0, 0.4);
-          padding: 0.75rem 1rem;
-          font-size: 0.875rem;
-          color: white;
-          outline: none;
-        }
-      `}</style>
     </div>
   );
 }
@@ -337,9 +315,7 @@ function Field({
 }) {
   return (
     <div>
-      <label className="mb-2 block text-xs uppercase tracking-[0.15em] text-white/50">
-        {label}
-      </label>
+      <label className="form-label">{label}</label>
       {children}
     </div>
   );

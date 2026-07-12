@@ -14,7 +14,7 @@ export function FAQAccordion({ faqs }: Props) {
 
   if (faqs.length === 0) {
     return (
-      <section className="py-24 text-center text-white/50">
+      <section className="py-24 text-center text-muted-subtle">
         FAQs will be added soon.
       </section>
     );
@@ -28,14 +28,14 @@ export function FAQAccordion({ faqs }: Props) {
           return (
             <article
               key={faq.id}
-              className="overflow-hidden rounded-sm border border-white/10 bg-white/[0.03]"
+              className="overflow-hidden rounded-sm border border-border-theme bg-surface-muted"
             >
               <button
                 type="button"
                 onClick={() => setOpenId(open ? null : faq.id)}
                 className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left"
               >
-                <span className="font-serif text-lg text-white">{faq.question}</span>
+                <span className="font-serif text-lg text-foreground">{faq.question}</span>
                 <ChevronDown
                   className={`shrink-0 text-gold-400 transition ${open ? "rotate-180" : ""}`}
                   size={20}
@@ -49,7 +49,7 @@ export function FAQAccordion({ faqs }: Props) {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <p className="border-t border-white/10 px-6 py-5 text-sm leading-relaxed text-white/65">
+                    <p className="border-t border-border-theme px-6 py-5 text-sm leading-relaxed text-muted">
                       {faq.answer}
                     </p>
                   </motion.div>
