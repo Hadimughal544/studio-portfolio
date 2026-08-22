@@ -1,4 +1,8 @@
-import { BookingForm } from "@/components/booking/BookingForm";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getAddonPricing } from "@/lib/site-content";
+import { ContractForm } from "@/components/booking/ContractForm";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,7 +22,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function BookingPage() {
+export default async function BookingPage() {
+  const [packages, addonPricing] = await Promise.all([
+    prisma.package.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    getAddonPricing(),
+  ]);
+
   return (
     <div>
       <section className="page-hero py-20">
@@ -30,12 +39,20 @@ export default function BookingPage() {
             Book With Us
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-muted">
-            Fill out the form below and our team will get back to you within 24
-            hours to discuss your dream wedding coverage.
+            Complete your wedding photography contract below — choose your
+            package, confirm the details, and sign electronically.
           </p>
         </div>
       </section>
-      <BookingForm />
+      <Suspense
+        fallback={
+          <div className="flex justify-center py-24">
+            <Loader2 className="animate-spin text-gold-400" />
+          </div>
+        }
+      >
+        <ContractForm packages={packages} addonPricing={addonPricing} />
+      </Suspense>
     </div>
   );
 }

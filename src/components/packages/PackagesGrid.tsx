@@ -1,16 +1,20 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import type { Package } from "@/generated/prisma/client";
+import type { AddonPricingInput } from "@/lib/validations";
+import { computeCustomTotal } from "@/lib/pricing";
 import { formatPrice } from "@/lib/utils";
 
 type Props = {
   packages: Package[];
+  addonPricing: AddonPricingInput;
 };
 
-export function PackagesGrid({ packages }: Props) {
+export function PackagesGrid({ packages, addonPricing }: Props) {
   if (packages.length === 0) {
     return (
       <section className="py-24">
@@ -76,6 +80,88 @@ export function PackagesGrid({ packages }: Props) {
           </motion.article>
         ))}
       </div>
+
+      <CustomizePanel addonPricing={addonPricing} />
     </section>
+  );
+}
+
+function CustomizePanel({ addonPricing }: { addonPricing: AddonPricingInput }) {
+  const [counts, setCounts] = useState({
+    photographers: 1,
+    videographers: 1,
+    drone: 0,
+  });
+
+  const total = useMemo(
+    () => computeCustomTotal(counts, addonPricing),
+    [counts, addonPricing],
+  );
+
+  const bookingHref = `/booking?customize=1&photographers=${counts.photographers}&videographers=${counts.videographers}&drone=${counts.drone}`;
+
+  const fields: { key: keyof typeof counts; label: string; unitPrice: number }[] = [
+    { key: "photographers", label: "Photographers", unitPrice: addonPricing.photographer },
+    { key: "videographers", label: "Videographers", unitPrice: addonPricing.videographer },
+    { key: "drone", label: "Drone Coverage", unitPrice: addonPricing.drone },
+  ];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 24 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5 }}
+      className="mx-auto mt-8 max-w-7xl px-4 sm:px-6 lg:px-8"
+    >
+      <div className="rounded-sm border border-gold-400/40 bg-gradient-to-b from-gold-400/10 to-transparent p-8">
+        <h2 className="font-serif text-3xl text-foreground">
+          Customize Your Package
+        </h2>
+        <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
+          Build your own coverage by choosing exactly how many photographers,
+          videographers, albums, and drone shoots you need.
+        </p>
+        <p className="mt-4 text-sm text-muted-subtle">
+          Base package: <span className="text-gold-300">{formatPrice(addonPricing.basePrice)}</span> — added automatically, then your selections below add on top.
+        </p>
+
+        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {fields.map(({ key, label, unitPrice }) => (
+            <div key={key}>
+              <label className="form-label">{label}</label>
+              <input
+                type="number"
+                min={0}
+                max={10}
+                value={counts[key]}
+                onChange={(e) =>
+                  setCounts({
+                    ...counts,
+                    [key]: Math.max(0, Number(e.target.value)),
+                  })
+                }
+                className="form-input"
+              />
+              <p className="mt-1 text-xs text-muted-subtle">
+                {formatPrice(unitPrice)} each
+              </p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-t border-border-theme pt-6">
+          <p className="font-serif text-3xl text-gold-300">
+            {formatPrice(total)}
+          </p>
+          <Link
+            href={bookingHref}
+            className="rounded-full bg-gold-500 px-8 py-3 text-sm uppercase tracking-[0.2em] text-black transition hover:bg-gold-400"
+          >
+            Continue to Booking
+          </Link>
+        </div>
+      </div>
+    </motion.div>
   );
 }

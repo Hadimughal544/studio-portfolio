@@ -7,16 +7,21 @@ datasource db {
   provider = "postgresql"
 }
 
-enum BookingStatus {
-  PENDING
-  CONTACTED
-  CONFIRMED
-  CANCELLED
-}
-
 enum MediaType {
   IMAGE
   VIDEO
+}
+
+enum BookedFromSide {
+  BRIDE
+  GROOM
+  BOTH
+}
+
+enum ContractStatus {
+  SUBMITTED
+  CONFIRMED
+  CANCELLED
 }
 
 model Admin {
@@ -25,20 +30,6 @@ model Admin {
   password  String
   name      String
   createdAt DateTime @default(now())
-}
-
-model Booking {
-  id        String        @id @default(cuid())
-  fullName  String
-  email     String
-  phone     String
-  eventDate DateTime
-  eventType String
-  venue     String?
-  message   String?
-  status    BookingStatus @default(PENDING)
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
 }
 
 model Package {
@@ -93,4 +84,25 @@ model SiteContent {
   key       String   @unique
   value     String
   updatedAt DateTime @updatedAt
+}
+
+model Contract {
+  id                  String         @id @default(cuid())
+  brideName           String
+  groomName           String
+  bookedFrom          BookedFromSide
+  clientPhone         String
+  clientEmail         String
+  coverageTypes       String[]
+  socialMediaConsent  Boolean
+  days                Json
+  totalFee            Float
+  bookingFeeAmount    Float
+  eventDayAmount      Float
+  albumDeliveryAmount Float
+  signatureName       String
+  agreedToTerms       Boolean
+  status              ContractStatus @default(SUBMITTED)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 }

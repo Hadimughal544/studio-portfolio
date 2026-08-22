@@ -1,15 +1,5 @@
 import { z } from "zod";
 
-export const bookingSchema = z.object({
-  fullName: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email address"),
-  phone: z.string().min(10, "Phone number is required"),
-  eventDate: z.string().min(1, "Event date is required"),
-  eventType: z.string().min(1, "Event type is required"),
-  venue: z.string().optional(),
-  message: z.string().optional(),
-});
-
 export const packageSchema = z.object({
   name: z.string().min(2),
   description: z.string().min(10),
@@ -42,8 +32,65 @@ export const clientAlbumSchema = z.object({
   albumUrl: z.string().url("Album link must be a valid URL"),
 });
 
-export type BookingInput = z.infer<typeof bookingSchema>;
+export const heroContentSchema = z.object({
+  heading: z.string().min(2, "Heading is required"),
+  description: z.string().min(10, "Description is required"),
+  locationLabel: z.string().optional().default(""),
+  mediaUrl: z.string().url("A background image or video is required"),
+  mediaType: z.enum(["IMAGE", "VIDEO"]),
+});
+
+export const addonPricingSchema = z.object({
+  basePrice: z.coerce.number().min(0),
+  photographer: z.coerce.number().min(0),
+  videographer: z.coerce.number().min(0),
+  drone: z.coerce.number().min(0),
+});
+
+export const contractDaySchema = z
+  .object({
+    dayNumber: z.number().min(1).max(4),
+    coverageLabel: z.string().min(1, "Coverage type is required"),
+    location: z.string().min(2, "Location is required"),
+    dateTime: z.string().min(1, "Date & time is required"),
+    selectionType: z.enum(["PACKAGE", "CUSTOM"]),
+    packageId: z.string().optional(),
+    photographers: z.number().min(0).optional(),
+    videographers: z.number().min(0).optional(),
+    drone: z.number().min(0).optional(),
+  })
+  .refine(
+    (day) => day.selectionType !== "PACKAGE" || !!day.packageId,
+    { message: "Select a package", path: ["packageId"] },
+  );
+
+export const contractSchema = z.object({
+  brideName: z.string().min(2, "Bride's name is required"),
+  groomName: z.string().min(2, "Groom's name is required"),
+  bookedFrom: z.enum(["BRIDE", "GROOM", "BOTH"]),
+  clientPhone: z.string().min(10, "Phone number is required"),
+  clientEmail: z.string().email("Invalid email address"),
+  coverageTypes: z.array(z.string()).min(1, "Select at least one coverage type"),
+  socialMediaConsent: z.boolean(),
+  days: z.array(contractDaySchema).min(1, "Add at least one event day").max(4),
+  signatureName: z.string().min(2, "Signature (full name) is required"),
+  agreedToTerms: z.boolean().refine((v) => v === true, {
+    message: "You must agree to the terms and conditions",
+  }),
+});
+
 export type PackageInput = z.infer<typeof packageSchema>;
 export type PortfolioInput = z.infer<typeof portfolioSchema>;
 export type FAQInput = z.infer<typeof faqSchema>;
 export type ClientAlbumInput = z.infer<typeof clientAlbumSchema>;
+export type HeroContentInput = z.infer<typeof heroContentSchema>;
+export type AddonPricingInput = z.infer<typeof addonPricingSchema>;
+export type ContractDayInput = z.infer<typeof contractDaySchema>;
+export type ContractInput = z.infer<typeof contractSchema>;
+
+/** Shape of a contract day as persisted to the DB, with server-computed snapshot fields. */
+export type StoredContractDay = ContractDayInput & {
+  packageName?: string;
+  packagePrice?: number;
+  customTotal?: number;
+};

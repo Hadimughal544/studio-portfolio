@@ -9,11 +9,11 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const bookings = await prisma.booking.findMany({
+  const contracts = await prisma.contract.findMany({
     orderBy: { createdAt: "desc" },
   });
 
-  return NextResponse.json(bookings);
+  return NextResponse.json(contracts);
 }
 
 export async function PATCH(request: Request) {
@@ -24,12 +24,12 @@ export async function PATCH(request: Request) {
 
   const { id, status } = await request.json();
 
-  const booking = await prisma.booking.update({
+  const contract = await prisma.contract.update({
     where: { id },
     data: { status },
   });
 
-  return NextResponse.json(booking);
+  return NextResponse.json(contract);
 }
 
 export async function DELETE(request: Request) {
@@ -44,6 +44,6 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Missing id" }, { status: 400 });
   }
 
-  await prisma.booking.delete({ where: { id } });
+  await prisma.contract.delete({ where: { id } });
   return NextResponse.json({ success: true });
 }

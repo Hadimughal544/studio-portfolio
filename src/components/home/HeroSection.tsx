@@ -1,34 +1,71 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
 
-export function HeroSection() {
+type Props = {
+  heading?: string;
+  description?: string;
+  locationLabel?: string;
+  mediaUrl?: string;
+  mediaType?: "IMAGE" | "VIDEO";
+};
+
+const DEFAULT_MEDIA_URL =
+  "https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80";
+
+export function HeroSection({
+  heading = "Welcome to Almir Wedding Films",
+  description = "Where dreams come to life and love stories unfold beautifully. Premium wedding photography & cinematography crafted with passion.",
+  locationLabel = "Lahore, Pakistan",
+  mediaUrl = DEFAULT_MEDIA_URL,
+  mediaType = "IMAGE",
+}: Props) {
+  const [firstLine, ...restLines] = heading.split("\n");
+  const secondLine = restLines.join(" ");
+
   return (
     <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden">
-      {/* Background Image */}
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{
-          backgroundImage:
-            "linear-gradient(to bottom, rgba(0,0,0,0.45), rgba(0,0,0,0.75)), url('https://images.unsplash.com/photo-1519741497674-611481863552?auto=format&fit=crop&w=2000&q=80')",
-        }}
-      />
+      {/* Background media */}
+      {mediaType === "VIDEO" ? (
+        <video
+          src={mediaUrl}
+          className="absolute inset-0 h-full w-full object-cover"
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="metadata"
+        />
+      ) : (
+        <Image
+          src={mediaUrl}
+          alt={heading}
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+      )}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/45 to-black/75" />
 
       {/* Extra Overlay */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.4)_100%)]" />
 
       {/* Content */}
       <div className="relative z-10 mx-auto max-w-5xl px-4 text-center sm:px-6">
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2, duration: 0.7 }}
-          className="mb-4 text-xs uppercase tracking-[0.4em] text-gold-300 preserve-gold"
-        >
-          Lahore, Pakistan
-        </motion.p>
+        {locationLabel && (
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.7 }}
+            className="mb-4 text-xs uppercase tracking-[0.4em] text-gold-300 preserve-gold"
+          >
+            {locationLabel}
+          </motion.p>
+        )}
 
         <motion.h1
           initial={{ opacity: 0, y: 30 }}
@@ -36,12 +73,13 @@ export function HeroSection() {
           transition={{ delay: 0.35, duration: 0.8 }}
           className="font-serif text-5xl leading-tight text-white sm:text-6xl md:text-7xl"
         >
-          Welcome to
-          <br />
-          <span className="text-gold-300 preserve-gold">
-            {" "}
-            Almir Wedding Films
-          </span>
+          {firstLine}
+          {secondLine && (
+            <>
+              <br />
+              <span className="text-gold-300 preserve-gold"> {secondLine}</span>
+            </>
+          )}
         </motion.h1>
 
         <motion.p
@@ -50,8 +88,7 @@ export function HeroSection() {
           transition={{ delay: 0.55, duration: 0.7 }}
           className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-white/80 sm:text-lg"
         >
-          Where dreams come to life and love stories unfold beautifully.
-          Premium wedding photography & cinematography crafted with passion.
+          {description}
         </motion.p>
 
         <motion.div

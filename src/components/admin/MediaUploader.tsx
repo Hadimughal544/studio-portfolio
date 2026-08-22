@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 import { Loader2, Upload } from "lucide-react";
+import { MAX_IMAGE_UPLOAD_BYTES, MAX_VIDEO_UPLOAD_BYTES } from "@/lib/constants";
+
+function formatMb(bytes: number) {
+  return `${Math.round(bytes / (1024 * 1024))}MB`;
+}
 
 type Props = {
   onUploaded: (url: string) => void;
@@ -22,6 +27,16 @@ export function MediaUploader({
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
+
+    const isVideo = file.type.startsWith("video/");
+    const maxBytes = isVideo ? MAX_VIDEO_UPLOAD_BYTES : MAX_IMAGE_UPLOAD_BYTES;
+    if (file.size > maxBytes) {
+      setError(
+        `${isVideo ? "Video" : "Image"} must be under ${formatMb(maxBytes)}`,
+      );
+      e.target.value = "";
+      return;
+    }
 
     setUploading(true);
     setError(null);

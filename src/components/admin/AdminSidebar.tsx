@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import {
   LayoutDashboard,
-  Calendar,
   Image,
   Package,
   HelpCircle,
@@ -14,6 +13,9 @@ import {
   ExternalLink,
   Menu,
   X,
+  FileSignature,
+  DollarSign,
+  MonitorPlay,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
@@ -22,9 +24,11 @@ import { BrandLogo } from "@/components/layout/BrandLogo";
 
 const LINKS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/bookings", label: "Bookings", icon: Calendar },
+  { href: "/admin/contracts", label: "Contracts", icon: FileSignature },
   { href: "/admin/portfolio", label: "Portfolio", icon: Image },
   { href: "/admin/packages", label: "Packages", icon: Package },
+  { href: "/admin/pricing", label: "Custom Pricing", icon: DollarSign },
+  { href: "/admin/hero", label: "Homepage Hero", icon: MonitorPlay },
   { href: "/admin/faqs", label: "FAQs", icon: HelpCircle },
   { href: "/admin/client-albums", label: "Client Albums", icon: FolderOpen },
 ];

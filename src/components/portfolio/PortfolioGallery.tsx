@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import type { PortfolioItem } from "@/generated/prisma/client";
@@ -81,22 +82,20 @@ export function PortfolioGallery({
                     onClick={() => setLightbox(item)}
                     className="group mb-4 block w-full break-inside-avoid overflow-hidden rounded-sm bg-surface-muted text-left"
                   >
-                    <div className="relative">
+                    <div className="relative aspect-[4/5] w-full overflow-hidden">
                       {item.mediaType === "VIDEO" ? (
-                        <video
+                        <AutoplayVideoTile
                           src={item.mediaUrl}
-                          poster={item.thumbnailUrl ?? undefined}
-                          className="aspect-[4/5] w-full object-cover"
-                          autoPlay
-                          muted
-                          loop
-                          playsInline
+                          poster={item.thumbnailUrl}
+                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         />
                       ) : (
-                        <img
+                        <Image
                           src={item.mediaUrl}
                           alt={item.title || "Portfolio image"}
-                          className="w-full object-cover transition duration-500 group-hover:scale-105"
+                          fill
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                          className="object-cover transition duration-500 group-hover:scale-105"
                         />
                       )}
                       {item.title && (
@@ -151,11 +150,15 @@ export function PortfolioGallery({
                   className="max-h-[85vh] w-full"
                 />
               ) : (
-                <img
-                  src={lightbox.mediaUrl}
-                  alt={lightbox.title || "Portfolio image"}
-                  className="max-h-[85vh] w-full object-contain"
-                />
+                <div className="relative aspect-[4/5] max-h-[85vh] w-full">
+                  <Image
+                    src={lightbox.mediaUrl}
+                    alt={lightbox.title || "Portfolio image"}
+                    fill
+                    sizes="90vw"
+                    className="object-contain"
+                  />
+                </div>
               )}
               {(lightbox.title || lightbox.description) && (
                 <div className="bg-black/80 p-4 text-center">
@@ -176,5 +179,49 @@ export function PortfolioGallery({
         )}
       </AnimatePresence>
     </>
+  );
+}
+
+function AutoplayVideoTile({
+  src,
+  poster,
+  className,
+}: {
+  src: string;
+  poster?: string | null;
+  className?: string;
+}) {
+  const ref = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.5 },
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <video
+      ref={ref}
+      src={src}
+      poster={poster ?? undefined}
+      className={className}
+      muted
+      loop
+      playsInline
+      preload="metadata"
+    />
   );
 }

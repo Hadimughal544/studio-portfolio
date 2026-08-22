@@ -1,11 +1,12 @@
 import { prisma } from "@/lib/prisma";
+import { getSiteContentMap } from "@/lib/site-content";
 import { HeroSection } from "@/components/home/HeroSection";
 import { AboutSection } from "@/components/home/AboutSection";
 import { FeaturedPortfolio } from "@/components/home/FeaturedPortfolio";
 import { CTASection } from "@/components/home/CTASection";
 import type { Metadata } from "next";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
@@ -55,13 +56,18 @@ const jsonLd = {
 };
 
 export default async function HomePage() {
-  const featuredItems = await prisma.portfolioItem
-    .findMany({
-      where: { featured: true },
-      orderBy: { sortOrder: "asc" },
-      take: 6,
-    })
-    .catch(() => []);
+  const [featuredItems, heroContent] = await Promise.all([
+    prisma.portfolioItem
+      .findMany({
+        where: { featured: true },
+        orderBy: { sortOrder: "asc" },
+        take: 6,
+      })
+      .catch(() => []),
+    getSiteContentMap("hero."),
+  ]);
+
+  const heroMediaType = heroContent.get("hero.mediaType");
 
   return (
     <>
@@ -69,7 +75,13 @@ export default async function HomePage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <HeroSection />
+      <HeroSection
+        heading={heroContent.get("hero.heading") || undefined}
+        description={heroContent.get("hero.description") || undefined}
+        locationLabel={heroContent.get("hero.locationLabel") || undefined}
+        mediaUrl={heroContent.get("hero.mediaUrl") || undefined}
+        mediaType={heroMediaType === "VIDEO" ? "VIDEO" : undefined}
+      />
       <AboutSection />
       <FeaturedPortfolio items={featuredItems} />
       <CTASection />

@@ -13,37 +13,36 @@ type DonutItem = {
 };
 
 type Props = {
-  bookingStatus: DonutItem[];
+  contractStatus: DonutItem[];
   portfolioCategories: BarItem[];
-  monthlyBookings: BarItem[];
+  monthlyContracts: BarItem[];
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  PENDING: "#eab308",
-  CONTACTED: "#3b82f6",
+  SUBMITTED: "#eab308",
   CONFIRMED: "#22c55e",
   CANCELLED: "#ef4444",
 };
 
 export function DashboardCharts({
-  bookingStatus,
+  contractStatus,
   portfolioCategories,
-  monthlyBookings,
+  monthlyContracts,
 }: Props) {
-  const totalBookings = bookingStatus.reduce((sum, item) => sum + item.value, 0);
-  const maxMonthly = Math.max(...monthlyBookings.map((m) => m.value), 1);
+  const totalContracts = contractStatus.reduce((sum, item) => sum + item.value, 0);
+  const maxMonthly = Math.max(...monthlyContracts.map((m) => m.value), 1);
   const maxCategory = Math.max(...portfolioCategories.map((c) => c.value), 1);
 
   return (
     <div className="mt-10 grid gap-6 lg:grid-cols-2">
-      <ChartCard title="Bookings by Status">
-        {totalBookings === 0 ? (
-          <EmptyChart message="No bookings yet" />
+      <ChartCard title="Contracts by Status">
+        {totalContracts === 0 ? (
+          <EmptyChart message="No contracts yet" />
         ) : (
           <div className="flex flex-col items-center gap-6 sm:flex-row sm:justify-around">
-            <DonutChart items={bookingStatus} total={totalBookings} />
+            <DonutChart items={contractStatus} total={totalContracts} />
             <div className="space-y-2">
-              {bookingStatus.map((item) => (
+              {contractStatus.map((item) => (
                 <div key={item.label} className="flex items-center gap-3 text-sm">
                   <span
                     className="h-3 w-3 rounded-full"
@@ -58,12 +57,12 @@ export function DashboardCharts({
         )}
       </ChartCard>
 
-      <ChartCard title="Bookings (Last 6 Months)">
-        {monthlyBookings.every((m) => m.value === 0) ? (
-          <EmptyChart message="No recent bookings" />
+      <ChartCard title="Contracts (Last 6 Months)">
+        {monthlyContracts.every((m) => m.value === 0) ? (
+          <EmptyChart message="No recent contracts" />
         ) : (
           <div className="flex h-48 items-end justify-between gap-2 px-2">
-            {monthlyBookings.map((month) => (
+            {monthlyContracts.map((month) => (
               <div
                 key={month.label}
                 className="flex flex-1 flex-col items-center gap-2"

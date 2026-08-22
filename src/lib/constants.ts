@@ -7,16 +7,6 @@ export const NAV_LINKS = [
   { href: "/faq", label: "FAQ" },
 ] as const;
 
-export const EVENT_TYPES = [
-  "Nikkah",
-  "Barat",
-  "Valima",
-  "Engagement",
-  "Mehndi",
-  "Full Wedding Coverage",
-  "Other",
-] as const;
-
 export const PORTFOLIO_CATEGORIES = [
   "wedding",
   "nikkah",
@@ -25,3 +15,32 @@ export const PORTFOLIO_CATEGORIES = [
   "engagement",
   "teaser",
 ] as const;
+
+export const COVERAGE_TYPES = [
+  "Mayo",
+  "Mehndi",
+  "Barat",
+  "Walima",
+  "Nikkah",
+  "Birthday",
+  "Fashion",
+  "Corporate",
+  "Other",
+] as const;
+
+export const STUDIO_INFO = {
+  name: "Almir Wedding Films",
+  phone: "+923214107323",
+  email: "almirweddingfilms@gmail.com",
+  address: "Office # 41 2nd Floor AL-LATIF CENTRE GULBERG III, Lahore, Pakistan",
+} as const;
+
+export const DEFAULT_ADDON_PRICING = {
+  basePrice: 20000,
+  photographer: 15000,
+  videographer: 20000,
+  drone: 12000,
+} as const;
+
+export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
+export const MAX_VIDEO_UPLOAD_BYTES = 50 * 1024 * 1024;

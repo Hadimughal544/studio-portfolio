@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { motion } from "framer-motion";
 
 export function AboutSection() {
@@ -13,12 +14,12 @@ export function AboutSection() {
           transition={{ duration: 0.7 }}
           className="relative aspect-[4/5] overflow-hidden rounded-sm"
         >
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{
-              backgroundImage:
-                "url('https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=1200&q=80')",
-            }}
+          <Image
+            src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=1200&q=80"
+            alt="Wedding photography by Almir Wedding Films"
+            fill
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            className="object-cover"
           />
         </motion.div>
 

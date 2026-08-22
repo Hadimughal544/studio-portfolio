@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { getAddonPricing } from "@/lib/site-content";
 import { PackagesGrid } from "@/components/packages/PackagesGrid";
 import type { Metadata } from "next";
 
@@ -20,9 +21,10 @@ export const metadata: Metadata = {
 };
 
 export default async function PackagesPage() {
-  const packages = await prisma.package
-    .findMany({ orderBy: { sortOrder: "asc" } })
-    .catch(() => []);
+  const [packages, addonPricing] = await Promise.all([
+    prisma.package.findMany({ orderBy: { sortOrder: "asc" } }).catch(() => []),
+    getAddonPricing(),
+  ]);
 
   return (
     <div>
@@ -40,7 +42,7 @@ export default async function PackagesPage() {
           </p>
         </div>
       </section>
-      <PackagesGrid packages={packages} />
+      <PackagesGrid packages={packages} addonPricing={addonPricing} />
     </div>
   );
 }

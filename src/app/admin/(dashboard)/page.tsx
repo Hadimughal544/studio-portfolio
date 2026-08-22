@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
-import { formatDate } from "@/lib/utils";
+import { formatDate, formatPrice } from "@/lib/utils";
 import Link from "next/link";
-import { Calendar, Image, Package, Users } from "lucide-react";
+import { FileSignature, Image, Package, Users } from "lucide-react";
 import {
   DashboardCharts,
   STATUS_COLORS,
@@ -29,32 +29,34 @@ export default async function AdminDashboardPage() {
   const sixMonthsAgo = months[0].start;
 
   const [
-    bookingsCount,
+    contractsCount,
     portfolioCount,
     packagesCount,
     albumsCount,
-    recentBookings,
-    allBookings,
+    submittedCount,
+    recentContracts,
+    allContracts,
     statusGroups,
     categoryGroups,
   ] = await Promise.all([
-    prisma.booking.count().catch(() => 0),
+    prisma.contract.count().catch(() => 0),
     prisma.portfolioItem.count().catch(() => 0),
     prisma.package.count().catch(() => 0),
     prisma.clientAlbum.count().catch(() => 0),
-    prisma.booking
+    prisma.contract.count({ where: { status: "SUBMITTED" } }).catch(() => 0),
+    prisma.contract
       .findMany({
         orderBy: { createdAt: "desc" },
         take: 5,
       })
       .catch(() => []),
-    prisma.booking
+    prisma.contract
       .findMany({
         where: { createdAt: { gte: sixMonthsAgo } },
         select: { createdAt: true },
       })
       .catch(() => []),
-    prisma.booking
+    prisma.contract
       .groupBy({
         by: ["status"],
         _count: { status: true },
@@ -68,14 +70,12 @@ export default async function AdminDashboardPage() {
       .catch(() => []),
   ]);
 
-  const pendingCount = recentBookings.filter((b) => b.status === "PENDING").length;
-
   const stats = [
     {
-      label: "Total Bookings",
-      value: bookingsCount,
-      icon: Calendar,
-      href: "/admin/bookings",
+      label: "Total Contracts",
+      value: contractsCount,
+      icon: FileSignature,
+      href: "/admin/contracts",
     },
     {
       label: "Portfolio Items",
@@ -96,23 +96,23 @@ export default async function AdminDashboardPage() {
       href: "/admin/client-albums",
     },
     {
-      label: "Pending Inquiries",
-      value: pendingCount,
-      icon: Calendar,
-      href: "/admin/bookings",
+      label: "Submitted Contracts",
+      value: submittedCount,
+      icon: FileSignature,
+      href: "/admin/contracts",
     },
   ];
 
-  const bookingStatus = statusGroups.map((group) => ({
+  const contractStatus = statusGroups.map((group) => ({
     label: group.status,
     value: group._count.status,
     color: STATUS_COLORS[group.status] ?? "#a3a3a3",
   }));
 
-  const monthlyBookings = months.map((month) => ({
+  const monthlyContracts = months.map((month) => ({
     label: month.label,
-    value: allBookings.filter(
-      (b) => b.createdAt >= month.start && b.createdAt <= month.end,
+    value: allContracts.filter(
+      (c) => c.createdAt >= month.start && c.createdAt <= month.end,
     ).length,
   }));
 
@@ -147,40 +147,42 @@ export default async function AdminDashboardPage() {
       </div>
 
       <DashboardCharts
-        bookingStatus={bookingStatus}
+        contractStatus={contractStatus}
         portfolioCategories={portfolioCategories}
-        monthlyBookings={monthlyBookings}
+        monthlyContracts={monthlyContracts}
       />
 
       <div className="mt-10 rounded-sm border border-border-theme bg-surface-muted">
         <div className="border-b border-border-theme px-6 py-4">
-          <h2 className="font-serif text-xl text-foreground">Recent Bookings</h2>
+          <h2 className="font-serif text-xl text-foreground">Recent Contracts</h2>
         </div>
-        {recentBookings.length === 0 ? (
-          <p className="p-6 text-sm text-muted-subtle">No bookings yet.</p>
+        {recentContracts.length === 0 ? (
+          <p className="p-6 text-sm text-muted-subtle">No contracts yet.</p>
         ) : (
           <div className="divide-y divide-border-theme">
-            {recentBookings.map((booking) => (
+            {recentContracts.map((contract) => (
               <div
-                key={booking.id}
+                key={contract.id}
                 className="flex flex-wrap items-center justify-between gap-4 px-6 py-4"
               >
                 <div>
-                  <p className="font-medium text-foreground">{booking.fullName}</p>
+                  <p className="font-medium text-foreground">
+                    {contract.brideName} &amp; {contract.groomName}
+                  </p>
                   <p className="text-sm text-muted-subtle">
-                    {booking.eventType} · {formatDate(booking.eventDate)}
+                    {formatPrice(contract.totalFee)} · {formatDate(contract.createdAt)}
                   </p>
                 </div>
                 <span
                   className={`rounded-full px-3 py-1 text-xs uppercase tracking-wider ${
-                    booking.status === "PENDING"
+                    contract.status === "SUBMITTED"
                       ? "bg-yellow-500/15 text-yellow-300"
-                      : booking.status === "CONFIRMED"
+                      : contract.status === "CONFIRMED"
                         ? "bg-green-500/15 text-green-300"
                         : "bg-white/10 text-muted"
                   }`}
                 >
-                  {booking.status}
+                  {contract.status}
                 </span>
               </div>
             ))}
