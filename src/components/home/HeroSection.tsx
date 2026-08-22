@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { ArrowDown } from "lucide-react";
+import { optimizeCloudinaryUrl } from "@/lib/utils";
 
 type Props = {
   heading?: string;
@@ -25,13 +26,14 @@ export function HeroSection({
 }: Props) {
   const [firstLine, ...restLines] = heading.split("\n");
   const secondLine = restLines.join(" ");
+  const optimizedMediaUrl = optimizeCloudinaryUrl(mediaUrl, 1920);
 
   return (
     <section className="relative flex min-h-[92vh] items-center justify-center overflow-hidden">
       {/* Background media */}
       {mediaType === "VIDEO" ? (
         <video
-          src={mediaUrl}
+          src={optimizedMediaUrl}
           className="absolute inset-0 h-full w-full object-cover"
           autoPlay
           muted
@@ -41,7 +43,7 @@ export function HeroSection({
         />
       ) : (
         <Image
-          src={mediaUrl}
+          src={optimizedMediaUrl}
           alt={heading}
           fill
           priority

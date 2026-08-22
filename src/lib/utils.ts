@@ -35,3 +35,17 @@ export function isImageUrl(url: string) {
   if (/\.(jpg|jpeg|png|gif|webp|avif)(\?|$)/i.test(url)) return true;
   return url.includes("res.cloudinary.com") && url.includes("/image/");
 }
+
+export function optimizeCloudinaryUrl(url: string, maxWidth?: number) {
+  if (!url.includes("res.cloudinary.com") || !url.includes("/upload/")) {
+    return url;
+  }
+
+  const transform = [
+    "f_auto",
+    "q_auto",
+    ...(maxWidth ? [`w_${maxWidth}`] : []),
+  ].join(",");
+
+  return url.replace("/upload/", `/upload/${transform}/`);
+}

@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import { X } from "lucide-react";
 import type { PortfolioItem } from "@/generated/prisma/client";
-import { cn } from "@/lib/utils";
+import { cn, optimizeCloudinaryUrl } from "@/lib/utils";
 
 type Props = {
   items: PortfolioItem[];
@@ -85,13 +85,17 @@ export function PortfolioGallery({
                     <div className="relative aspect-[4/5] w-full overflow-hidden">
                       {item.mediaType === "VIDEO" ? (
                         <AutoplayVideoTile
-                          src={item.mediaUrl}
-                          poster={item.thumbnailUrl}
+                          src={optimizeCloudinaryUrl(item.mediaUrl, 800)}
+                          poster={
+                            item.thumbnailUrl
+                              ? optimizeCloudinaryUrl(item.thumbnailUrl)
+                              : item.thumbnailUrl
+                          }
                           className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
                         />
                       ) : (
                         <Image
-                          src={item.mediaUrl}
+                          src={optimizeCloudinaryUrl(item.mediaUrl)}
                           alt={item.title || "Portfolio image"}
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
@@ -140,8 +144,12 @@ export function PortfolioGallery({
             >
               {lightbox.mediaType === "VIDEO" ? (
                 <video
-                  src={lightbox.mediaUrl}
-                  poster={lightbox.thumbnailUrl ?? undefined}
+                  src={optimizeCloudinaryUrl(lightbox.mediaUrl)}
+                  poster={
+                    lightbox.thumbnailUrl
+                      ? optimizeCloudinaryUrl(lightbox.thumbnailUrl)
+                      : undefined
+                  }
                   autoPlay
                   muted
                   loop
@@ -152,7 +160,7 @@ export function PortfolioGallery({
               ) : (
                 <div className="relative aspect-[4/5] max-h-[85vh] w-full">
                   <Image
-                    src={lightbox.mediaUrl}
+                    src={optimizeCloudinaryUrl(lightbox.mediaUrl)}
                     alt={lightbox.title || "Portfolio image"}
                     fill
                     sizes="90vw"
