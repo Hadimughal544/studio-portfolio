@@ -8,6 +8,27 @@
   --gold-400: #d4af37;
   --gold-500: #c9a227;
   --cream: #faf7f2;
+  /* Fallbacks before next-themes applies .light / .dark */
+  --background: #f7f3eb;
+  --foreground: #12100e;
+  --surface: #f7f3eb;
+  --surface-elevated: #ffffff;
+  --surface-muted: rgb(18 16 14 / 0.06);
+  --muted: #2f2b28;
+  --muted-subtle: #524c47;
+  --border-theme: rgb(18 16 14 / 0.22);
+  --header-bg: rgb(247 243 235 / 0.94);
+  --input-bg: #ffffff;
+  --input-border: rgb(18 16 14 / 0.28);
+  --placeholder: rgb(18 16 14 / 0.48);
+  --overlay: rgb(18 16 14 / 0.6);
+  --hero-gradient-from: rgb(18 16 14 / 0.07);
+  --error-text: #b91c1c;
+  --error-bg: rgb(185 28 28 / 0.08);
+  --error-border: rgb(185 28 28 / 0.28);
+  --select-bg: #ffffff;
+  --option-bg: #ffffff;
+  --option-color: #12100e;
 }
 
 .dark {
