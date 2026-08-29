@@ -1,11 +1,20 @@
 "use client";
 
+import { useEffect } from "react";
 import { motion } from "framer-motion";
 
+let hasMountedOnce = false;
+
 export function PageTransition({ children }: { children: React.ReactNode }) {
+  const animateIn = hasMountedOnce;
+
+  useEffect(() => {
+    hasMountedOnce = true;
+  }, []);
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 24 }}
+      initial={animateIn ? { opacity: 0, y: 24 } : false}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -16 }}
       transition={{

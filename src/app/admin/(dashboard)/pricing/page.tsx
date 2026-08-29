@@ -48,6 +48,7 @@ export default function AdminPricingPage() {
     { key: "photographer", label: "Price per Photographer (PKR)" },
     { key: "videographer", label: "Price per Videographer (PKR)" },
     { key: "drone", label: "Price per Drone (PKR)" },
+    { key: "album", label: "Price per Album (PKR)" },
   ];
 
   return (

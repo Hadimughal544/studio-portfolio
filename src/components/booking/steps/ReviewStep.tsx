@@ -3,7 +3,11 @@ import type { UseFormWatch } from "react-hook-form";
 import type { Package } from "@/generated/prisma/client";
 import type { AddonPricingInput, ContractInput } from "@/lib/validations";
 import { STUDIO_INFO } from "@/lib/constants";
-import { computeContractTotal, computePaymentSplit } from "@/lib/pricing";
+import {
+  computeContractTotal,
+  computeCustomTotal,
+  computePaymentSplit,
+} from "@/lib/pricing";
 import { formatPrice } from "@/lib/utils";
 
 type Props = {
@@ -12,10 +16,38 @@ type Props = {
   addonPricing: AddonPricingInput;
 };
 
+function getDaySubtotal(
+  day: ContractInput["days"][number],
+  packages: Package[],
+  addonPricing: AddonPricingInput,
+) {
+  if (day.selectionType === "PACKAGE") {
+    const pkg = packages.find((p) => p.id === day.packageId);
+    return {
+      label: pkg ? `Package: ${pkg.name}` : "Package",
+      amount: pkg?.price ?? 0,
+    };
+  }
+
+  return {
+    label: `Custom: ${day.photographers ?? 0} photographer(s), ${day.videographers ?? 0} videographer(s), ${day.drone ?? 0} drone, ${day.albums ?? 0} album(s)`,
+    amount: computeCustomTotal(day, addonPricing),
+  };
+}
+
 export function ReviewStep({ watch, packages, addonPricing }: Props) {
   const days = watch("days");
   const totalFee = useMemo(
     () => computeContractTotal(days, packages, addonPricing),
+    [days, packages, addonPricing],
+  );
+
+  const dayBreakdown = useMemo(
+    () => days.map((day, index) => ({
+      dayNumber: index + 1,
+      coverageLabel: day.coverageLabel,
+      ...getDaySubtotal(day, packages, addonPricing),
+    })),
     [days, packages, addonPricing],
   );
 
@@ -31,6 +63,27 @@ export function ReviewStep({ watch, packages, addonPricing }: Props) {
         <p className="mt-1 text-sm text-muted-subtle">
           Please review your total investment and our terms & conditions.
         </p>
+      </div>
+
+      <div className="rounded-sm border border-border-theme bg-surface-muted p-5">
+        <h3 className="font-serif text-lg text-foreground">Day Breakdown</h3>
+        <div className="mt-4 space-y-3">
+          {dayBreakdown.map((day) => (
+            <div
+              key={day.dayNumber}
+              className="flex flex-wrap items-start justify-between gap-3 border-b border-border-theme pb-3 last:border-b-0 last:pb-0"
+            >
+              <div>
+                <p className="text-sm text-foreground">
+                  Day {day.dayNumber}
+                  {day.coverageLabel ? ` — ${day.coverageLabel}` : ""}
+                </p>
+                <p className="mt-1 text-xs text-muted-subtle">{day.label}</p>
+              </div>
+              <p className="text-sm text-gold-300">{formatPrice(day.amount)}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       <div className="rounded-sm border border-gold-400/40 bg-gold-400/5 p-6">

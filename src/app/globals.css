@@ -28,6 +28,9 @@
   --error-text: #fca5a5;
   --error-bg: rgb(239 68 68 / 0.1);
   --error-border: rgb(239 68 68 / 0.3);
+  --select-bg: #18181b;
+  --option-bg: #18181b;
+  --option-color: #f5f5f4;
 }
 
 .light {
@@ -48,6 +51,9 @@
   --error-text: #b91c1c;
   --error-bg: rgb(185 28 28 / 0.08);
   --error-border: rgb(185 28 28 / 0.28);
+  --select-bg: #ffffff;
+  --option-bg: #ffffff;
+  --option-color: #12100e;
 }
 
 @theme inline {
@@ -132,9 +138,9 @@ body {
   background-size: 200% 100%;
 }
 
-input,
-textarea,
-select {
+.dark input,
+.dark textarea,
+.dark select {
   color-scheme: dark;
 }
 
@@ -178,9 +184,22 @@ select {
   color: var(--placeholder);
 }
 
-.form-input option {
-  background: var(--input-bg);
+select.form-input,
+select.admin-input {
+  background-color: var(--select-bg);
   color: var(--foreground);
+  cursor: pointer;
+}
+
+select.form-input option,
+select.admin-input option {
+  background-color: var(--option-bg);
+  color: var(--option-color);
+}
+
+select.form-input option:disabled,
+select.admin-input option:disabled {
+  color: var(--placeholder);
 }
 
 .form-error {

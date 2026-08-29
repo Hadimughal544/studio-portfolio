@@ -114,6 +114,21 @@ async function main() {
     });
   }
 
+  await prisma.siteContent.upsert({
+    where: { key: "addon_pricing" },
+    update: {},
+    create: {
+      key: "addon_pricing",
+      value: JSON.stringify({
+        basePrice: 20000,
+        photographer: 15000,
+        videographer: 20000,
+        drone: 12000,
+        album: 10000,
+      }),
+    },
+  });
+
   console.log("Seed completed.");
   console.log(`Admin login: ${adminEmail} / ${adminPassword}`);
 }

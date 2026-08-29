@@ -12,7 +12,7 @@ export function TransitionProvider({
   const pathname = usePathname();
 
   return (
-    <AnimatePresence mode="wait">
+    <AnimatePresence mode="wait" initial={false}>
       <PageTransition key={pathname}>{children}</PageTransition>
     </AnimatePresence>
   );

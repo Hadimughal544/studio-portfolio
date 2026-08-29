@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useFieldArray, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -12,6 +12,11 @@ import {
   type AddonPricingInput,
   type ContractInput,
 } from "@/lib/validations";
+import {
+  buildInitialDays,
+  clearCustomBookingDaysStorage,
+  createDefaultDay,
+} from "@/lib/booking-init";
 import { StepIndicator } from "@/components/booking/StepIndicator";
 import { ClientDetailsStep } from "@/components/booking/steps/ClientDetailsStep";
 import { CoverageStep } from "@/components/booking/steps/CoverageStep";
@@ -32,23 +37,29 @@ const STEP_FIELDS: (keyof ContractInput)[][] = [
   ["signatureName", "agreedToTerms"],
 ];
 
-const defaultDay = (): ContractInput["days"][number] => ({
-  dayNumber: 1,
-  coverageLabel: "",
-  location: "",
-  dateTime: "",
-  selectionType: "PACKAGE",
-  packageId: "",
-  photographers: 0,
-  videographers: 0,
-  drone: 0,
-});
+const EMPTY_FORM_VALUES: ContractInput = {
+  brideName: "",
+  groomName: "",
+  bookedFrom: "BOTH",
+  clientPhone: "",
+  clientEmail: "",
+  coverageTypes: [],
+  socialMediaConsent: true,
+  days: [createDefaultDay()],
+  signatureName: "",
+  agreedToTerms: false,
+};
 
 export function ContractForm({ packages, addonPricing }: Props) {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const initialDays = useMemo(
+    () => buildInitialDays(searchParams, packages),
+    [searchParams, packages],
+  );
 
   const {
     register,
@@ -62,36 +73,12 @@ export function ContractForm({ packages, addonPricing }: Props) {
   } = useForm<ContractInput>({
     resolver: zodResolver(contractSchema),
     defaultValues: {
-      brideName: "",
-      groomName: "",
-      bookedFrom: "BOTH",
-      clientPhone: "",
-      clientEmail: "",
-      coverageTypes: [],
-      socialMediaConsent: true,
-      days: [defaultDay()],
-      signatureName: "",
-      agreedToTerms: false,
+      ...EMPTY_FORM_VALUES,
+      days: initialDays,
     },
   });
 
   const fieldArray = useFieldArray({ control, name: "days" });
-
-  useEffect(() => {
-    if (searchParams.get("customize") !== "1") return;
-    setValue("days.0.selectionType", "CUSTOM");
-    setValue("days.0.packageId", "");
-    setValue(
-      "days.0.photographers",
-      Number(searchParams.get("photographers") ?? 0),
-    );
-    setValue(
-      "days.0.videographers",
-      Number(searchParams.get("videographers") ?? 0),
-    );
-    setValue("days.0.drone", Number(searchParams.get("drone") ?? 0));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   async function goNext() {
     const valid = await trigger(STEP_FIELDS[step - 1]);
@@ -100,6 +87,12 @@ export function ContractForm({ packages, addonPricing }: Props) {
 
   function goBack() {
     setStep((s) => Math.max(s - 1, 1));
+  }
+
+  function resetForm() {
+    clearCustomBookingDaysStorage();
+    reset(EMPTY_FORM_VALUES);
+    setStep(1);
   }
 
   async function onSubmit(data: ContractInput) {
@@ -116,8 +109,9 @@ export function ContractForm({ packages, addonPricing }: Props) {
         throw new Error(body.error ?? "Failed to submit contract");
       }
 
+      clearCustomBookingDaysStorage();
+      reset(EMPTY_FORM_VALUES);
       setSubmitted(true);
-      reset();
       setStep(1);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -142,7 +136,10 @@ export function ContractForm({ packages, addonPricing }: Props) {
           </p>
           <button
             type="button"
-            onClick={() => setSubmitted(false)}
+            onClick={() => {
+              setSubmitted(false);
+              resetForm();
+            }}
             className="mt-8 text-sm uppercase tracking-[0.2em] text-gold-500 hover:text-gold-400 dark:text-gold-400 dark:hover:text-gold-300"
           >
             Submit Another Contract

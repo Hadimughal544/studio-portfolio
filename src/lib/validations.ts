@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { MAX_EVENT_DAYS } from "@/lib/constants";
 
 export const packageSchema = z.object({
   name: z.string().min(2),
@@ -45,11 +46,12 @@ export const addonPricingSchema = z.object({
   photographer: z.coerce.number().min(0),
   videographer: z.coerce.number().min(0),
   drone: z.coerce.number().min(0),
+  album: z.coerce.number().min(0),
 });
 
 export const contractDaySchema = z
   .object({
-    dayNumber: z.number().min(1).max(4),
+    dayNumber: z.number().min(1).max(MAX_EVENT_DAYS),
     coverageLabel: z.string().min(1, "Coverage type is required"),
     location: z.string().min(2, "Location is required"),
     dateTime: z.string().min(1, "Date & time is required"),
@@ -58,6 +60,7 @@ export const contractDaySchema = z
     photographers: z.number().min(0).optional(),
     videographers: z.number().min(0).optional(),
     drone: z.number().min(0).optional(),
+    albums: z.number().min(0).optional(),
   })
   .refine(
     (day) => day.selectionType !== "PACKAGE" || !!day.packageId,
@@ -72,7 +75,10 @@ export const contractSchema = z.object({
   clientEmail: z.string().email("Invalid email address"),
   coverageTypes: z.array(z.string()).min(1, "Select at least one coverage type"),
   socialMediaConsent: z.boolean(),
-  days: z.array(contractDaySchema).min(1, "Add at least one event day").max(4),
+  days: z
+    .array(contractDaySchema)
+    .min(1, "Add at least one event day")
+    .max(MAX_EVENT_DAYS),
   signatureName: z.string().min(2, "Signature (full name) is required"),
   agreedToTerms: z.boolean().refine((v) => v === true, {
     message: "You must agree to the terms and conditions",

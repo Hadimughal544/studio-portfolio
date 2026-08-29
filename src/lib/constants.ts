@@ -40,7 +40,14 @@ export const DEFAULT_ADDON_PRICING = {
   photographer: 15000,
   videographer: 20000,
   drone: 12000,
+  album: 10000,
 } as const;
+
+export const CUSTOM_BOOKING_DAYS_KEY = "customBookingDays";
+
+export const MAX_EVENT_DAYS = 10;
+
+export const ABOUT_SECTION_IMAGE = "/images/about-wedding2.jpg";
 
 export const MAX_IMAGE_UPLOAD_BYTES = 5 * 1024 * 1024;
 export const MAX_VIDEO_UPLOAD_BYTES = 50 * 1024 * 1024;

@@ -89,7 +89,7 @@ export async function generateContractPdf(
     } else {
       writeLine(
         cursor,
-        `Custom: ${day.photographers ?? 0} photographer(s), ${day.videographers ?? 0} videographer(s), ${day.drone ?? 0} drone — ${formatPrice(day.customTotal ?? 0)}`,
+        `Custom: ${day.photographers ?? 0} photographer(s), ${day.videographers ?? 0} videographer(s), ${day.drone ?? 0} drone, ${day.albums ?? 0} album(s) — ${formatPrice(day.customTotal ?? 0)}`,
         { size: 10 },
       );
     }

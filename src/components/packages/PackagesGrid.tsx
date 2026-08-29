@@ -2,17 +2,34 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Check } from "lucide-react";
 import type { Package } from "@/generated/prisma/client";
 import type { AddonPricingInput } from "@/lib/validations";
+import { CUSTOM_BOOKING_DAYS_KEY } from "@/lib/constants";
 import { computeCustomTotal } from "@/lib/pricing";
+import { DayCountSelector } from "@/components/booking/DayCountSelector";
 import { formatPrice } from "@/lib/utils";
 
 type Props = {
   packages: Package[];
   addonPricing: AddonPricingInput;
 };
+
+type CustomDayCounts = {
+  photographers: number;
+  videographers: number;
+  drone: number;
+  albums: number;
+};
+
+const defaultDayCounts = (): CustomDayCounts => ({
+  photographers: 1,
+  videographers: 1,
+  drone: 0,
+  albums: 0,
+});
 
 export function PackagesGrid({ packages, addonPricing }: Props) {
   if (packages.length === 0) {
@@ -68,7 +85,7 @@ export function PackagesGrid({ packages, addonPricing }: Props) {
               ))}
             </ul>
             <Link
-              href="/booking"
+              href={`/booking?packageId=${pkg.id}`}
               className={`mt-10 block rounded-full py-3 text-center text-sm uppercase tracking-[0.2em] transition ${
                 pkg.isPopular
                   ? "bg-gold-500 text-black hover:bg-gold-400"
@@ -87,24 +104,58 @@ export function PackagesGrid({ packages, addonPricing }: Props) {
 }
 
 function CustomizePanel({ addonPricing }: { addonPricing: AddonPricingInput }) {
-  const [counts, setCounts] = useState({
-    photographers: 1,
-    videographers: 1,
-    drone: 0,
-  });
+  const router = useRouter();
+  const [dayConfigs, setDayConfigs] = useState<CustomDayCounts[]>([
+    defaultDayCounts(),
+  ]);
 
-  const total = useMemo(
-    () => computeCustomTotal(counts, addonPricing),
-    [counts, addonPricing],
-  );
-
-  const bookingHref = `/booking?customize=1&photographers=${counts.photographers}&videographers=${counts.videographers}&drone=${counts.drone}`;
-
-  const fields: { key: keyof typeof counts; label: string; unitPrice: number }[] = [
+  const addonFields: {
+    key: keyof CustomDayCounts;
+    label: string;
+    unitPrice: number;
+  }[] = [
     { key: "photographers", label: "Photographers", unitPrice: addonPricing.photographer },
     { key: "videographers", label: "Videographers", unitPrice: addonPricing.videographer },
     { key: "drone", label: "Drone Coverage", unitPrice: addonPricing.drone },
+    { key: "albums", label: "Albums", unitPrice: addonPricing.album },
   ];
+
+  function handleDayCountChange(count: number) {
+    setDayConfigs((prev) => {
+      const next = prev.slice(0, count);
+      while (next.length < count) {
+        next.push(defaultDayCounts());
+      }
+      return next;
+    });
+  }
+
+  function updateDayField(
+    dayIndex: number,
+    key: keyof CustomDayCounts,
+    value: number,
+  ) {
+    setDayConfigs((prev) =>
+      prev.map((day, index) =>
+        index === dayIndex ? { ...day, [key]: Math.max(0, value) } : day,
+      ),
+    );
+  }
+
+  const dayTotals = useMemo(
+    () => dayConfigs.map((counts) => computeCustomTotal(counts, addonPricing)),
+    [dayConfigs, addonPricing],
+  );
+
+  const grandTotal = useMemo(
+    () => dayTotals.reduce((sum, total) => sum + total, 0),
+    [dayTotals],
+  );
+
+  function handleContinue() {
+    sessionStorage.setItem(CUSTOM_BOOKING_DAYS_KEY, JSON.stringify(dayConfigs));
+    router.push(`/booking?customize=1&days=${dayConfigs.length}`);
+  }
 
   return (
     <motion.div
@@ -119,47 +170,78 @@ function CustomizePanel({ addonPricing }: { addonPricing: AddonPricingInput }) {
           Customize Your Package
         </h2>
         <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-          Build your own coverage by choosing exactly how many photographers,
-          videographers, albums, and drone shoots you need.
+          Choose how many event days you need, then configure photographers,
+          videographers, drone coverage, and albums for each day.
         </p>
         <p className="mt-4 text-sm text-muted-subtle">
-          Base package: <span className="text-gold-300">{formatPrice(addonPricing.basePrice)}</span> — added automatically, then your selections below add on top.
+          Base package:{" "}
+          <span className="text-gold-300">{formatPrice(addonPricing.basePrice)}</span>{" "}
+          — added per custom day, then your selections below add on top.
         </p>
 
-        <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {fields.map(({ key, label, unitPrice }) => (
-            <div key={key}>
-              <label className="form-label">{label}</label>
-              <input
-                type="number"
-                min={0}
-                max={10}
-                value={counts[key]}
-                onChange={(e) =>
-                  setCounts({
-                    ...counts,
-                    [key]: Math.max(0, Number(e.target.value)),
-                  })
-                }
-                className="form-input"
-              />
-              <p className="mt-1 text-xs text-muted-subtle">
-                {formatPrice(unitPrice)} each
-              </p>
+        <div className="mt-8">
+          <DayCountSelector
+            value={dayConfigs.length}
+            onChange={handleDayCountChange}
+          />
+        </div>
+
+        <div className="mt-8 space-y-6">
+          {dayConfigs.map((day, dayIndex) => (
+            <div
+              key={dayIndex}
+              className="rounded-sm border border-border-theme bg-surface-muted/50 p-5"
+            >
+              <div className="mb-4 flex items-center justify-between gap-4">
+                <h3 className="font-serif text-lg text-foreground">
+                  Day {dayIndex + 1}
+                </h3>
+                <p className="text-sm text-gold-300">
+                  {formatPrice(dayTotals[dayIndex])}
+                </p>
+              </div>
+
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                {addonFields.map(({ key, label, unitPrice }) => (
+                  <div key={key}>
+                    <label className="form-label">{label}</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={10}
+                      value={day[key]}
+                      onChange={(e) =>
+                        updateDayField(dayIndex, key, Number(e.target.value))
+                      }
+                      className="form-input"
+                    />
+                    <p className="mt-1 text-xs text-muted-subtle">
+                      {formatPrice(unitPrice)} each
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
           ))}
         </div>
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-6 border-t border-border-theme pt-6">
-          <p className="font-serif text-3xl text-gold-300">
-            {formatPrice(total)}
-          </p>
-          <Link
-            href={bookingHref}
+          <div>
+            <p className="font-serif text-3xl text-gold-300">
+              {formatPrice(grandTotal)}
+            </p>
+            <p className="mt-1 text-xs uppercase tracking-[0.15em] text-muted-subtle">
+              Total for {dayConfigs.length}{" "}
+              {dayConfigs.length === 1 ? "day" : "days"}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={handleContinue}
             className="rounded-full bg-gold-500 px-8 py-3 text-sm uppercase tracking-[0.2em] text-black transition hover:bg-gold-400"
           >
             Continue to Booking
-          </Link>
+          </button>
         </div>
       </div>
     </motion.div>

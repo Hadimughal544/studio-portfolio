@@ -1,4 +1,3 @@
-import { Plus, Trash2 } from "lucide-react";
 import type {
   FieldErrors,
   UseFieldArrayReturn,
@@ -8,8 +7,9 @@ import type {
 } from "react-hook-form";
 import type { Package } from "@/generated/prisma/client";
 import type { AddonPricingInput, ContractInput } from "@/lib/validations";
-import { COVERAGE_TYPES } from "@/lib/constants";
+import { COVERAGE_TYPES, MAX_EVENT_DAYS } from "@/lib/constants";
 import { computeCustomTotal } from "@/lib/pricing";
+import { DayCountSelector } from "@/components/booking/DayCountSelector";
 import { Field } from "@/components/booking/FormField";
 import { cn, formatPrice } from "@/lib/utils";
 
@@ -23,17 +23,32 @@ type Props = {
   addonPricing: AddonPricingInput;
 };
 
-const emptyDay = (dayNumber: number): ContractInput["days"][number] => ({
-  dayNumber: Math.min(dayNumber, 4) as 1 | 2 | 3 | 4,
-  coverageLabel: "",
-  location: "",
-  dateTime: "",
-  selectionType: "PACKAGE",
-  packageId: "",
-  photographers: 0,
-  videographers: 0,
-  drone: 0,
-});
+const emptyDay = (
+  dayNumber: number,
+  existing?: ContractInput["days"][number],
+  template?: ContractInput["days"][number],
+): ContractInput["days"][number] => {
+  const inheritedPackage =
+    !existing &&
+    template?.selectionType === "PACKAGE" &&
+    template.packageId
+      ? { selectionType: "PACKAGE" as const, packageId: template.packageId }
+      : null;
+
+  return {
+    dayNumber: Math.min(dayNumber, MAX_EVENT_DAYS),
+    coverageLabel: existing?.coverageLabel ?? "",
+    location: existing?.location ?? "",
+    dateTime: existing?.dateTime ?? "",
+    selectionType:
+      existing?.selectionType ?? inheritedPackage?.selectionType ?? "PACKAGE",
+    packageId: existing?.packageId ?? inheritedPackage?.packageId ?? "",
+    photographers: existing?.photographers ?? 0,
+    videographers: existing?.videographers ?? 0,
+    drone: existing?.drone ?? 0,
+    albums: existing?.albums ?? 0,
+  };
+};
 
 export function DaysStep({
   register,
@@ -44,21 +59,33 @@ export function DaysStep({
   packages,
   addonPricing,
 }: Props) {
-  const { fields, append, remove } = fieldArray;
+  const { fields, replace } = fieldArray;
   const selectedCoverage = watch("coverageTypes");
+  const currentDays = watch("days");
+  const dayCount = currentDays?.length ?? fields.length;
   const coverageOptions = selectedCoverage?.length
     ? selectedCoverage
     : COVERAGE_TYPES;
+
+  function handleDayCountChange(count: number) {
+    const template = currentDays[0];
+    const nextDays = Array.from({ length: count }, (_, index) =>
+      emptyDay(index + 1, currentDays[index], template),
+    );
+    replace(nextDays);
+  }
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="font-serif text-2xl text-foreground">Event Days</h2>
         <p className="mt-1 text-sm text-muted-subtle">
-          Add each event day (up to 4), its location, and the package that
-          applies to it — a different package can be chosen per day.
+          Choose how many event days you need, then configure each day&apos;s
+          location, schedule, and package.
         </p>
       </div>
+
+      <DayCountSelector value={dayCount} onChange={handleDayCountChange} />
 
       <div className="space-y-6">
         {fields.map((field, index) => {
@@ -71,20 +98,10 @@ export function DaysStep({
               key={field.id}
               className="rounded-sm border border-border-theme bg-surface-muted p-5"
             >
-              <div className="mb-4 flex items-center justify-between">
+              <div className="mb-4">
                 <h3 className="font-serif text-lg text-foreground">
                   Day {index + 1}
                 </h3>
-                {fields.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => remove(index)}
-                    className="rounded-sm p-1.5 text-red-400 hover:bg-red-500/10"
-                    aria-label="Remove day"
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                )}
               </div>
 
               <div className="grid gap-4 sm:grid-cols-2">
@@ -200,17 +217,6 @@ export function DaysStep({
           );
         })}
       </div>
-
-      {fields.length < 4 && (
-        <button
-          type="button"
-          onClick={() => append(emptyDay(fields.length + 1))}
-          className="inline-flex items-center gap-2 rounded-sm border border-dashed border-border-theme px-4 py-2.5 text-sm text-muted transition hover:border-gold-400/50 hover:text-foreground"
-        >
-          <Plus size={16} />
-          Add Another Day
-        </button>
-      )}
     </div>
   );
 }
@@ -229,15 +235,16 @@ function CustomFields({
   const photographers = watch(`days.${index}.photographers`) ?? 0;
   const videographers = watch(`days.${index}.videographers`) ?? 0;
   const drone = watch(`days.${index}.drone`) ?? 0;
+  const albums = watch(`days.${index}.albums`) ?? 0;
 
   const total = computeCustomTotal(
-    { photographers, videographers, drone },
+    { photographers, videographers, drone, albums },
     addonPricing,
   );
 
   return (
     <div className="mt-5 rounded-sm border border-gold-400/30 bg-gold-400/5 p-4">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <NumberField
           label="Photographers"
           registration={register(`days.${index}.photographers`, {
@@ -253,6 +260,12 @@ function CustomFields({
         <NumberField
           label="Drone"
           registration={register(`days.${index}.drone`, {
+            valueAsNumber: true,
+          })}
+        />
+        <NumberField
+          label="Albums"
+          registration={register(`days.${index}.albums`, {
             valueAsNumber: true,
           })}
         />

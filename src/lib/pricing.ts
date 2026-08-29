@@ -6,6 +6,7 @@ type CustomCounts = {
   photographers?: number;
   videographers?: number;
   drone?: number;
+  albums?: number;
 };
 
 export function computeCustomTotal(
@@ -16,7 +17,8 @@ export function computeCustomTotal(
     addonPricing.basePrice +
     (counts.photographers ?? 0) * addonPricing.photographer +
     (counts.videographers ?? 0) * addonPricing.videographer +
-    (counts.drone ?? 0) * addonPricing.drone
+    (counts.drone ?? 0) * addonPricing.drone +
+    (counts.albums ?? 0) * addonPricing.album
   );
 }
 

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
+import { ABOUT_SECTION_IMAGE } from "@/lib/constants";
 
 export function AboutSection() {
   return (
@@ -9,15 +10,15 @@ export function AboutSection() {
       <div className="mx-auto grid max-w-7xl items-center gap-12 px-4 sm:px-6 lg:grid-cols-2 lg:px-8">
         <motion.div
           initial={{ opacity: 0, x: -30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7 }}
-          className="relative aspect-[4/5] overflow-hidden rounded-sm"
+          className="relative aspect-[4/5] overflow-hidden rounded-sm bg-black/5"
         >
           <Image
-            src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?auto=format&fit=crop&w=1200&q=80"
-            alt="Wedding photography by Almir Wedding Films"
+            src={ABOUT_SECTION_IMAGE}
+            alt="Pakistani wedding photography by Almir Wedding Films"
             fill
+            priority
             sizes="(max-width: 1024px) 100vw, 50vw"
             className="object-cover"
           />
@@ -25,8 +26,7 @@ export function AboutSection() {
 
         <motion.div
           initial={{ opacity: 0, x: 30 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
+          animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.7, delay: 0.15 }}
         >
           <p className="text-xs uppercase tracking-[0.35em] text-gold-500">

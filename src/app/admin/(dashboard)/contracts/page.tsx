@@ -178,7 +178,7 @@ export default function AdminContractsPage() {
                             <p className="mt-1 text-xs">
                               Custom: {day.photographers ?? 0} photographer(s),{" "}
                               {day.videographers ?? 0} videographer(s),{" "}
-                              {day.drone ?? 0} drone —{" "}
+                              {day.drone ?? 0} drone, {day.albums ?? 0} album(s) —{" "}
                               {formatPrice(day.customTotal ?? 0)}
                             </p>
                           )}
