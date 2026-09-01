@@ -28,7 +28,7 @@ const defaultDayCounts = (): CustomDayCounts => ({
   photographers: 1,
   videographers: 1,
   drone: 0,
-  albums: 0,
+  albums: 1,
 });
 
 export function PackagesGrid({ packages, addonPricing }: Props) {

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -27,6 +28,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = faqSchema.parse(body);
     const faq = await prisma.faqItem.create({ data });
+    revalidatePath("/faq");
     return NextResponse.json(faq, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -44,6 +46,7 @@ export async function PUT(request: Request) {
     const { id, ...rest } = body;
     const data = faqSchema.parse(rest);
     const faq = await prisma.faqItem.update({ where: { id }, data });
+    revalidatePath("/faq");
     return NextResponse.json(faq);
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -63,5 +66,6 @@ export async function DELETE(request: Request) {
   }
 
   await prisma.faqItem.delete({ where: { id } });
+  revalidatePath("/faq");
   return NextResponse.json({ success: true });
 }

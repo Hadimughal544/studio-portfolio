@@ -100,6 +100,9 @@ model Contract {
   bookingFeeAmount    Float
   eventDayAmount      Float
   albumDeliveryAmount Float
+  bookingFeePaid      Boolean        @default(false)
+  eventDayPaid        Boolean        @default(false)
+  albumDeliveryPaid   Boolean        @default(false)
   signatureName       String
   agreedToTerms       Boolean
   status              ContractStatus @default(SUBMITTED)

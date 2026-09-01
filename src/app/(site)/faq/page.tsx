@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { FAQAccordion } from "@/components/faq/FAQAccordion";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "FAQ",
   description:

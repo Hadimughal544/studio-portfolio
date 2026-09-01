@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { ClientAlbumGrid } from "@/components/client-album/ClientAlbumGrid";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Client Album",
   description:

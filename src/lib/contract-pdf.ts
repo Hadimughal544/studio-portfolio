@@ -86,6 +86,10 @@ export async function generateContractPdf(
         `Package: ${day.packageName ?? "—"} (${formatPrice(day.packagePrice ?? 0)})`,
         { size: 10 },
       );
+    } else if (day.manual) {
+      writeLine(cursor, `Amount: ${formatPrice(day.customTotal ?? 0)}`, {
+        size: 10,
+      });
     } else {
       writeLine(
         cursor,
@@ -97,11 +101,26 @@ export async function generateContractPdf(
   }
 
   cursor.y -= 6;
+  const pct = (n: number) =>
+    contract.totalFee
+      ? ` (${Math.round((n / contract.totalFee) * 100)}%)`
+      : "";
+  const paidTag = (paid: boolean) => (paid ? " — RECEIVED" : "");
   writeLine(cursor, "Payment Terms", { size: 13, bold: true, gap: 20 });
   writeLine(cursor, `Total Fee: ${formatPrice(contract.totalFee)}`, { bold: true });
-  writeLine(cursor, `Booking Fee (50%): ${formatPrice(contract.bookingFeeAmount)}`);
-  writeLine(cursor, `Due on Event Day (40%): ${formatPrice(contract.eventDayAmount)}`);
-  writeLine(cursor, `Due on Album Delivery (10%): ${formatPrice(contract.albumDeliveryAmount)}`, { gap: 22 });
+  writeLine(
+    cursor,
+    `Booking Fee${pct(contract.bookingFeeAmount)}: ${formatPrice(contract.bookingFeeAmount)}${paidTag(contract.bookingFeePaid)}`,
+  );
+  writeLine(
+    cursor,
+    `Due on Event Day${pct(contract.eventDayAmount)}: ${formatPrice(contract.eventDayAmount)}${paidTag(contract.eventDayPaid)}`,
+  );
+  writeLine(
+    cursor,
+    `Due on Album Delivery${pct(contract.albumDeliveryAmount)}: ${formatPrice(contract.albumDeliveryAmount)}${paidTag(contract.albumDeliveryPaid)}`,
+    { gap: 22 },
+  );
 
   writeLine(cursor, "Signature", { size: 13, bold: true, gap: 20 });
   writeLine(cursor, `Signed by: ${contract.signatureName}`);

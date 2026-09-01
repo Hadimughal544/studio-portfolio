@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getSiteContentMap, setSiteContentValues } from "@/lib/site-content";
@@ -44,6 +45,7 @@ export async function PUT(request: Request) {
       "hero.mediaType": data.mediaType,
     });
 
+    revalidatePath("/"); // home hero section
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });

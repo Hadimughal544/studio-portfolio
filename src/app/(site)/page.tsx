@@ -60,7 +60,7 @@ export default async function HomePage() {
     prisma.portfolioItem
       .findMany({
         where: { featured: true },
-        orderBy: { sortOrder: "asc" },
+        orderBy: [{ sortOrder: "asc" }, { createdAt: "desc" }],
         take: 6,
       })
       .catch(() => []),

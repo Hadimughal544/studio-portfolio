@@ -3,6 +3,8 @@ import { getAddonPricing } from "@/lib/site-content";
 import { PackagesGrid } from "@/components/packages/PackagesGrid";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Packages",
   description:

@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { clientAlbumSchema } from "@/lib/validations";
+
+// Public pages that render client album data and must refresh after an edit.
+function revalidateClientAlbums() {
+  revalidatePath("/client-album");
+  revalidatePath("/client-album/[slug]", "page");
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -27,6 +34,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const data = clientAlbumSchema.parse(body);
     const album = await prisma.clientAlbum.create({ data });
+    revalidateClientAlbums();
     return NextResponse.json(album, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -44,6 +52,7 @@ export async function PUT(request: Request) {
     const { id, ...rest } = body;
     const data = clientAlbumSchema.parse(rest);
     const album = await prisma.clientAlbum.update({ where: { id }, data });
+    revalidateClientAlbums();
     return NextResponse.json(album);
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -63,5 +72,6 @@ export async function DELETE(request: Request) {
   }
 
   await prisma.clientAlbum.delete({ where: { id } });
+  revalidateClientAlbums();
   return NextResponse.json({ success: true });
 }

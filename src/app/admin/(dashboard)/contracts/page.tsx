@@ -1,17 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { ChevronDown, Download, Loader2, Trash2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
+import { Download, Loader2, Plus, Trash2 } from "lucide-react";
 import type { Contract } from "@/generated/prisma/client";
-import type { StoredContractDay } from "@/lib/validations";
-import { cn, formatDate, formatPrice } from "@/lib/utils";
+import { ContractForm, CONTRACT_STATUSES } from "@/components/admin/ContractForm";
+import { Pagination } from "@/components/admin/Pagination";
+import { PaymentDots } from "@/components/admin/PaymentDots";
+import { formatDate, formatPrice } from "@/lib/utils";
 
-const STATUSES = ["SUBMITTED", "CONFIRMED", "CANCELLED"] as const;
+const PAGE_SIZE = 10;
 
 export default function AdminContractsPage() {
   const [contracts, setContracts] = useState<Contract[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [page, setPage] = useState(1);
 
   async function load() {
     const res = await fetch("/api/admin/contracts");
@@ -22,6 +26,17 @@ export default function AdminContractsPage() {
   useEffect(() => {
     load();
   }, []);
+
+  const pageCount = Math.max(1, Math.ceil(contracts.length / PAGE_SIZE));
+  const currentPage = Math.min(page, pageCount);
+  const visible = useMemo(
+    () =>
+      contracts.slice(
+        (currentPage - 1) * PAGE_SIZE,
+        currentPage * PAGE_SIZE,
+      ),
+    [contracts, currentPage],
+  );
 
   async function updateStatus(id: string, status: string) {
     await fetch("/api/admin/contracts", {
@@ -48,153 +63,138 @@ export default function AdminContractsPage() {
 
   return (
     <div className="p-4 sm:p-6 lg:p-8">
-      <h1 className="font-serif text-3xl text-foreground">Contracts</h1>
-      <p className="mt-1 text-sm text-muted-subtle">
-        Signed wedding contracts submitted through the booking form.
-      </p>
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 className="font-serif text-3xl text-foreground">Contracts</h1>
+          <p className="mt-1 text-sm text-muted-subtle">
+            Wedding contracts from the booking form, plus any you add here.
+          </p>
+        </div>
+        {!showForm && (
+          <button
+            type="button"
+            onClick={() => setShowForm(true)}
+            className="inline-flex items-center gap-2 rounded-sm bg-gold-500 px-4 py-2 text-sm uppercase tracking-[0.1em] text-black"
+          >
+            <Plus size={16} />
+            Add Contract
+          </button>
+        )}
+      </div>
+
+      {showForm && (
+        <div className="mt-8">
+          <ContractForm
+            onSaved={() => {
+              setShowForm(false);
+              load();
+            }}
+            onCancel={() => setShowForm(false)}
+          />
+        </div>
+      )}
 
       {contracts.length === 0 ? (
-        <p className="mt-10 text-muted-subtle">No contracts submitted yet.</p>
+        <p className="mt-10 text-muted-subtle">No contracts yet.</p>
       ) : (
-        <div className="mt-8 space-y-4">
-          {contracts.map((contract) => {
-            const days = (contract.days as unknown as StoredContractDay[]) ?? [];
-            const expanded = expandedId === contract.id;
-
-            return (
-              <article
-                key={contract.id}
-                className="rounded-sm border border-border-theme bg-surface-muted p-6"
-              >
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h2 className="text-lg font-medium text-foreground">
-                      {contract.brideName} &amp; {contract.groomName}
-                    </h2>
-                    <p className="mt-1 text-sm text-muted-subtle">
-                      {contract.clientEmail} · {contract.clientPhone}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <select
-                      value={contract.status}
-                      onChange={(e) => updateStatus(contract.id, e.target.value)}
-                      className="form-input px-3 py-1.5 text-xs uppercase"
-                    >
-                      {STATUSES.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                    <a
-                      href={`/api/admin/contracts/${contract.id}/pdf`}
-                      className="rounded-sm p-2 text-muted-subtle hover:bg-surface-muted hover:text-foreground"
-                      aria-label="Download PDF"
-                    >
-                      <Download size={16} />
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => deleteContract(contract.id)}
-                      className="rounded-sm p-2 text-red-400 hover:bg-red-500/10"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
-                  <div>
-                    <p className="text-muted-subtle">Total Fee</p>
-                    <p className="text-gold-300">{formatPrice(contract.totalFee)}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-subtle">Coverage</p>
-                    <p className="text-foreground">
-                      {contract.coverageTypes.join(", ") || "—"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-muted-subtle">Signed By</p>
-                    <p className="text-foreground">{contract.signatureName}</p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setExpandedId(expanded ? null : contract.id)}
-                  className="mt-4 flex items-center gap-1 text-xs uppercase tracking-[0.15em] text-gold-400 hover:text-gold-300"
-                >
-                  <ChevronDown
-                    size={14}
-                    className={cn("transition", expanded && "rotate-180")}
-                  />
-                  {expanded ? "Hide" : "View"} Details
-                </button>
-
-                {expanded && (
-                  <div className="mt-4 space-y-3 border-t border-border-theme pt-4">
-                    <div className="grid gap-3 text-sm sm:grid-cols-3">
-                      <div>
-                        <p className="text-muted-subtle">Booked From</p>
-                        <p className="text-foreground">{contract.bookedFrom}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-subtle">Social Media Consent</p>
-                        <p className="text-foreground">
-                          {contract.socialMediaConsent ? "Yes" : "No"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-muted-subtle">Payment Split</p>
-                        <p className="text-foreground">
-                          {formatPrice(contract.bookingFeeAmount)} / {" "}
-                          {formatPrice(contract.eventDayAmount)} / {" "}
-                          {formatPrice(contract.albumDeliveryAmount)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      {days.map((day, index) => (
-                        <div
-                          key={index}
-                          className="rounded-sm bg-black/20 p-3 text-sm text-muted"
+        <>
+          <div className="mt-8 overflow-x-auto">
+            <table className="w-full min-w-[820px] text-sm">
+              <thead>
+                <tr className="border-b border-border-theme text-left text-xs uppercase tracking-[0.15em] text-muted-subtle">
+                  <th className="py-3 pr-4 font-normal">Couple</th>
+                  <th className="py-3 pr-4 font-normal">Contact</th>
+                  <th className="py-3 pr-4 font-normal">Total</th>
+                  <th className="py-3 pr-4 font-normal">Advance / Remaining</th>
+                  <th className="py-3 pr-4 font-normal">Payments</th>
+                  <th className="py-3 pr-4 font-normal">Status</th>
+                  <th className="py-3 pr-4 font-normal">Created</th>
+                  <th className="py-3 pr-4 text-right font-normal">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((contract) => (
+                  <tr
+                    key={contract.id}
+                    className="border-b border-border-theme align-top"
+                  >
+                    <td className="py-3 pr-4">
+                      <Link
+                        href={`/admin/contracts/${contract.id}`}
+                        className="text-foreground hover:text-gold-300"
+                      >
+                        {contract.brideName} &amp; {contract.groomName}
+                      </Link>
+                    </td>
+                    <td className="py-3 pr-4 text-muted-subtle">
+                      <div>{contract.clientEmail}</div>
+                      <div>{contract.clientPhone}</div>
+                    </td>
+                    <td className="py-3 pr-4 text-gold-300">
+                      {formatPrice(contract.totalFee)}
+                    </td>
+                    <td className="py-3 pr-4 text-foreground">
+                      {formatPrice(contract.bookingFeeAmount)}
+                      <span className="text-muted-subtle">
+                        {" "}
+                        /{" "}
+                        {formatPrice(
+                          contract.totalFee - contract.bookingFeeAmount,
+                        )}
+                      </span>
+                    </td>
+                    <td className="py-3 pr-4">
+                      <PaymentDots contract={contract} />
+                    </td>
+                    <td className="py-3 pr-4">
+                      <select
+                        value={contract.status}
+                        onChange={(e) =>
+                          updateStatus(contract.id, e.target.value)
+                        }
+                        className="form-input px-2 py-1 text-xs uppercase"
+                      >
+                        {CONTRACT_STATUSES.map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-3 pr-4 text-muted-subtle">
+                      {formatDate(contract.createdAt)}
+                    </td>
+                    <td className="py-3 pr-4">
+                      <div className="flex items-center justify-end gap-1">
+                        <a
+                          href={`/api/admin/contracts/${contract.id}/pdf`}
+                          className="rounded-sm p-2 text-muted-subtle hover:bg-surface-muted hover:text-foreground"
+                          aria-label="Download PDF"
                         >
-                          <p className="text-foreground">
-                            Day {day.dayNumber} — {day.coverageLabel} at{" "}
-                            {day.location}
-                          </p>
-                          <p className="text-xs text-muted-subtle">
-                            {day.dateTime}
-                          </p>
-                          {day.selectionType === "PACKAGE" ? (
-                            <p className="mt-1 text-xs">
-                              Package: {day.packageName ?? "—"} (
-                              {formatPrice(day.packagePrice ?? 0)})
-                            </p>
-                          ) : (
-                            <p className="mt-1 text-xs">
-                              Custom: {day.photographers ?? 0} photographer(s),{" "}
-                              {day.videographers ?? 0} videographer(s),{" "}
-                              {day.drone ?? 0} drone, {day.albums ?? 0} album(s) —{" "}
-                              {formatPrice(day.customTotal ?? 0)}
-                            </p>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                          <Download size={16} />
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => deleteContract(contract.id)}
+                          className="rounded-sm p-2 text-red-400 hover:bg-red-500/10"
+                          aria-label="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-                <p className="mt-3 text-xs text-foreground/30">
-                  Submitted {formatDate(contract.createdAt)}
-                </p>
-              </article>
-            );
-          })}
-        </div>
+          <Pagination
+            page={currentPage}
+            pageCount={pageCount}
+            onPageChange={setPage}
+          />
+        </>
       )}
     </div>
   );

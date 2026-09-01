@@ -1,8 +1,15 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { packageSchema } from "@/lib/validations";
+
+// Public pages that render package data and must refresh after an edit.
+function revalidatePackages() {
+  revalidatePath("/packages");
+  revalidatePath("/booking");
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -28,6 +35,7 @@ export async function POST(request: Request) {
     const data = packageSchema.parse(body);
 
     const pkg = await prisma.package.create({ data });
+    revalidatePackages();
     return NextResponse.json(pkg, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -50,6 +58,7 @@ export async function PUT(request: Request) {
       data,
     });
 
+    revalidatePackages();
     return NextResponse.json(pkg);
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -69,5 +78,6 @@ export async function DELETE(request: Request) {
   }
 
   await prisma.package.delete({ where: { id } });
+  revalidatePackages();
   return NextResponse.json({ success: true });
 }

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 import type { PortfolioItem } from "@/generated/prisma/client";
 import { cn, optimizeCloudinaryUrl } from "@/lib/utils";
 
@@ -13,13 +13,14 @@ type Props = {
   className?: string;
 };
 
+
 export function PortfolioGallery({
   items,
   showFilters = true,
   className,
 }: Props) {
   const [activeCategory, setActiveCategory] = useState<string>("all");
-  const [lightbox, setLightbox] = useState<PortfolioItem | null>(null);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const categories = useMemo(() => {
     const fromData = [...new Set(items.map((item) => item.category))];
@@ -30,6 +31,28 @@ export function PortfolioGallery({
     activeCategory === "all"
       ? items
       : items.filter((item) => item.category === activeCategory);
+
+  const activeItem =
+    lightboxIndex == null ? null : filtered[lightboxIndex] ?? null;
+
+  const go = (delta: number) =>
+    setLightboxIndex((i) =>
+      i == null ? i : (i + delta + filtered.length) % filtered.length,
+    );
+
+  useEffect(() => {
+    if (lightboxIndex == null) return;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setLightboxIndex(null);
+      if (e.key === "ArrowLeft") go(-1);
+      if (e.key === "ArrowRight") go(1);
+    };
+
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lightboxIndex, filtered.length]);
 
   return (
     <>
@@ -70,7 +93,7 @@ export function PortfolioGallery({
               className="columns-1 gap-4 sm:columns-2 lg:columns-3"
             >
               <AnimatePresence mode="popLayout">
-                {filtered.map((item) => (
+                {filtered.map((item, index) => (
                   <motion.button
                     layout
                     key={item.id}
@@ -79,7 +102,7 @@ export function PortfolioGallery({
                     animate={{ opacity: 1, scale: 1 }}
                     exit={{ opacity: 0, scale: 0.95 }}
                     transition={{ duration: 0.35 }}
-                    onClick={() => setLightbox(item)}
+                    onClick={() => setLightboxIndex(index)}
                     className="group mb-4 block w-full break-inside-avoid overflow-hidden rounded-sm bg-surface-muted text-left"
                   >
                     <div className="relative aspect-[4/5] w-full overflow-hidden">
@@ -119,35 +142,71 @@ export function PortfolioGallery({
       </section>
 
       <AnimatePresence>
-        {lightbox && (
+        {activeItem && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 p-4"
-            onClick={() => setLightbox(null)}
+            onClick={() => setLightboxIndex(null)}
           >
             <button
               type="button"
               aria-label="Close"
-              className="absolute right-6 top-6 text-muted hover:text-foreground"
-              onClick={() => setLightbox(null)}
+              className="absolute right-6 top-6 z-[110] text-muted hover:text-foreground"
+              onClick={() => setLightboxIndex(null)}
             >
               <X size={28} />
             </button>
+
+            {filtered.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Previous"
+                  className="absolute left-2 top-1/2 z-[110] -translate-y-1/2 p-2 text-white/70 transition hover:text-white sm:left-4"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(-1);
+                  }}
+                >
+                  <ChevronLeft size={40} />
+                </button>
+                <button
+                  type="button"
+                  aria-label="Next"
+                  className="absolute right-2 top-1/2 z-[110] -translate-y-1/2 p-2 text-white/70 transition hover:text-white sm:right-4"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    go(1);
+                  }}
+                >
+                  <ChevronRight size={40} />
+                </button>
+              </>
+            )}
+
             <motion.div
+              key={activeItem.id}
               initial={{ scale: 0.9, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.9, opacity: 0 }}
-              className="max-h-[85vh] max-w-5xl overflow-hidden rounded-sm"
+              className="flex max-h-[95vh] max-w-[95vw] flex-col items-center overflow-hidden rounded-sm"
               onClick={(e) => e.stopPropagation()}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={(_, info) => {
+                if (info.offset.x < -80) go(1);
+                else if (info.offset.x > 80) go(-1);
+              }}
             >
-              {lightbox.mediaType === "VIDEO" ? (
+              {activeItem.mediaType === "VIDEO" ? (
                 <video
-                  src={optimizeCloudinaryUrl(lightbox.mediaUrl)}
+                  src={optimizeCloudinaryUrl(activeItem.mediaUrl)}
                   poster={
-                    lightbox.thumbnailUrl
-                      ? optimizeCloudinaryUrl(lightbox.thumbnailUrl)
+                    activeItem.thumbnailUrl
+                      ? optimizeCloudinaryUrl(activeItem.thumbnailUrl)
                       : undefined
                   }
                   autoPlay
@@ -155,29 +214,31 @@ export function PortfolioGallery({
                   loop
                   playsInline
                   controls
-                  className="max-h-[85vh] w-full"
+                  className="block max-h-[85vh] w-auto max-w-[95vw] object-contain"
                 />
               ) : (
-                <div className="relative aspect-[4/5] max-h-[85vh] w-full">
-                  <Image
-                    src={optimizeCloudinaryUrl(lightbox.mediaUrl)}
-                    alt={lightbox.title || "Portfolio image"}
-                    fill
-                    sizes="90vw"
-                    className="object-contain"
-                  />
-                </div>
+                // Fullscreen viewer: a plain <img> lets the media size itself to
+                // the viewport (next/image `fill` needs a fixed-size parent and
+                // would upscale portrait shots). The URL is already Cloudinary-
+                // optimised via optimizeCloudinaryUrl.
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={optimizeCloudinaryUrl(activeItem.mediaUrl, 1600)}
+                  alt={activeItem.title || "Portfolio image"}
+                  className="block max-h-[85vh] w-auto max-w-[95vw] object-contain"
+                  draggable={false}
+                />
               )}
-              {(lightbox.title || lightbox.description) && (
-                <div className="bg-black/80 p-4 text-center">
-                  {lightbox.title && (
-                    <h3 className="font-serif text-2xl text-foreground">
-                      {lightbox.title}
+              {(activeItem.title || activeItem.description) && (
+                <div className="w-full shrink-0 bg-black/80 px-4 py-2 text-center">
+                  {activeItem.title && (
+                    <h3 className="font-serif text-base text-foreground">
+                      {activeItem.title}
                     </h3>
                   )}
-                  {lightbox.description && (
-                    <p className="mt-2 text-sm text-muted">
-                      {lightbox.description}
+                  {activeItem.description && (
+                    <p className="mt-0.5 text-xs text-muted">
+                      {activeItem.description}
                     </p>
                   )}
                 </div>

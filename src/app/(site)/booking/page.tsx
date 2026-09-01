@@ -5,6 +5,8 @@ import { getAddonPricing } from "@/lib/site-content";
 import { ContractForm } from "@/components/booking/ContractForm";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Booking",
   description:

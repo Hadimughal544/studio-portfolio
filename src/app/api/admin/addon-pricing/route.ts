@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getAddonPricing } from "@/lib/site-content";
@@ -26,6 +27,8 @@ export async function PUT(request: Request) {
 
     await setSiteContentValues({ addon_pricing: JSON.stringify(data) });
 
+    revalidatePath("/packages");
+    revalidatePath("/booking");
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });

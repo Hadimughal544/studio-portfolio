@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { portfolioSchema } from "@/lib/validations";
 import { deleteFromCloudinary } from "@/lib/cloudinary";
+
+// Public pages that render portfolio data and must refresh after an edit.
+function revalidatePortfolio() {
+  revalidatePath("/portfolio");
+  revalidatePath("/"); // home featured portfolio section
+}
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -35,6 +42,7 @@ export async function POST(request: Request) {
       },
     });
 
+    revalidatePortfolio();
     return NextResponse.json(item, { status: 201 });
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -60,6 +68,7 @@ export async function PUT(request: Request) {
       },
     });
 
+    revalidatePortfolio();
     return NextResponse.json(item);
   } catch {
     return NextResponse.json({ error: "Invalid data" }, { status: 400 });
@@ -87,5 +96,6 @@ export async function DELETE(request: Request) {
   }
 
   await prisma.portfolioItem.delete({ where: { id } });
+  revalidatePortfolio();
   return NextResponse.json({ success: true });
 }

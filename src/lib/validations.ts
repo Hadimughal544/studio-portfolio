@@ -85,6 +85,76 @@ export const contractSchema = z.object({
   }),
 });
 
+export const CONTRACT_STATUS = z.enum([
+  "SUBMITTED",
+  "CONFIRMED",
+  "CANCELLED",
+]);
+
+export const adminContractDaySchema = z.object({
+  dayNumber: z.coerce.number().min(1).max(MAX_EVENT_DAYS),
+  coverageLabel: z.string().min(1, "Event type is required"),
+  location: z.string().min(1, "Location is required"),
+  dateTime: z.string().min(1, "Date & time is required"),
+  amount: z.coerce.number().min(0),
+});
+
+export const adminContractSchema = z
+  .object({
+    brideName: z.string().min(2, "Bride's name is required"),
+    groomName: z.string().min(2, "Groom's name is required"),
+    bookedFrom: z.enum(["BRIDE", "GROOM", "BOTH"]),
+    clientPhone: z.string().min(6, "Phone number is required"),
+    clientEmail: z.string().email("Invalid email address"),
+    coverageTypes: z
+      .array(z.string())
+      .min(1, "Select at least one coverage type"),
+    socialMediaConsent: z.boolean().default(false),
+    days: z
+      .array(adminContractDaySchema)
+      .min(1, "Add at least one event day")
+      .max(MAX_EVENT_DAYS),
+    signatureName: z.string().min(2, "Signature (full name) is required"),
+    agreedToTerms: z.boolean().default(false),
+    status: CONTRACT_STATUS.default("SUBMITTED"),
+    totalFee: z.coerce.number().min(0),
+    bookingFeeAmount: z.coerce.number().min(0),
+    eventDayAmount: z.coerce.number().min(0),
+    albumDeliveryAmount: z.coerce.number().min(0),
+    bookingFeePaid: z.boolean().default(false),
+    eventDayPaid: z.boolean().default(false),
+    albumDeliveryPaid: z.boolean().default(false),
+  })
+  .refine(
+    (d) =>
+      Math.round(d.bookingFeeAmount + d.eventDayAmount + d.albumDeliveryAmount) ===
+      Math.round(d.totalFee),
+    {
+      message: "Installments must add up to the total fee",
+      path: ["albumDeliveryAmount"],
+    },
+  );
+
+/** Partial update for a single contract's status / payment-received flags. */
+export const contractPatchSchema = z
+  .object({
+    id: z.string().min(1),
+    status: CONTRACT_STATUS.optional(),
+    bookingFeePaid: z.boolean().optional(),
+    eventDayPaid: z.boolean().optional(),
+    albumDeliveryPaid: z.boolean().optional(),
+  })
+  .refine(
+    (d) =>
+      d.status !== undefined ||
+      d.bookingFeePaid !== undefined ||
+      d.eventDayPaid !== undefined ||
+      d.albumDeliveryPaid !== undefined,
+    { message: "Nothing to update" },
+  );
+
+export type ContractPatchInput = z.infer<typeof contractPatchSchema>;
+
 export type PackageInput = z.infer<typeof packageSchema>;
 export type PortfolioInput = z.infer<typeof portfolioSchema>;
 export type FAQInput = z.infer<typeof faqSchema>;
@@ -93,10 +163,14 @@ export type HeroContentInput = z.infer<typeof heroContentSchema>;
 export type AddonPricingInput = z.infer<typeof addonPricingSchema>;
 export type ContractDayInput = z.infer<typeof contractDaySchema>;
 export type ContractInput = z.infer<typeof contractSchema>;
+export type AdminContractDayInput = z.infer<typeof adminContractDaySchema>;
+export type AdminContractInput = z.infer<typeof adminContractSchema>;
 
 /** Shape of a contract day as persisted to the DB, with server-computed snapshot fields. */
 export type StoredContractDay = ContractDayInput & {
   packageName?: string;
   packagePrice?: number;
   customTotal?: number;
+  /** true for days entered manually via the admin form (no package/add-on breakdown). */
+  manual?: boolean;
 };

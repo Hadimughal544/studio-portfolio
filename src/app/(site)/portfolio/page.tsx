@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { PortfolioGallery } from "@/components/portfolio/PortfolioGallery";
 import type { Metadata } from "next";
 
+export const revalidate = 60;
+
 export const metadata: Metadata = {
   title: "Portfolio",
   description:
